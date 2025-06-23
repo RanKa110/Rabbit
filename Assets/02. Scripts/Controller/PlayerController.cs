@@ -14,6 +14,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
     private InputController _inputController;
+    private SpriteRenderer _spriteRenderer;
     
     private Vector2 _moveInput;
     private bool _isRunning;
@@ -51,6 +52,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _boxCollider2D = GetComponent<BoxCollider2D>();
         _inputController = GetComponent<InputController>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
         
         PlayerTable playerTable = TableManager.Instance.GetTable<PlayerTable>();
         PlayerSO playerData = playerTable.GetDataByID(0);
@@ -76,16 +78,11 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
         action.Attack.performed += _ => _attackTriggered = true;
         action.Attack.canceled += _ => _attackTriggered = false;
-        
-        
     }
 
     protected override void Update()
     {
         base.Update();
-
-        Rotate();
-        FindTarget();
     }
 
     /// <summary>
@@ -117,7 +114,10 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public void Rotate()
     {
-        
+        if (MoveInput.x > 0.01f)
+            _spriteRenderer.flipX = false;
+        else if (MoveInput.x < -0.01f)
+            _spriteRenderer.flipX = true;
     }
 
     public void Attack()
