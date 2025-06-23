@@ -29,7 +29,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public Transform Transform  => transform;
 
 
-
     protected override void Awake()
     {
         base.Awake();
