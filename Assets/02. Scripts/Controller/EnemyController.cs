@@ -1,18 +1,19 @@
 using UnityEngine;
 using System;
 
-//[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Collider2D))]
 [RequireComponent(typeof(StatManager))]
 [RequireComponent(typeof(StatusEffectManager))]
 
 public class EnemyController : BaseController<EnemyController, EnemyState>, IAttackable, IDamageable
 {
-    private CharacterController _characterController;
+    private Rigidbody2D _rb;
     private IDamageable _target;
     private bool _isDead;
 
     public bool IsDead => _isDead;
-    public Collider Collider { get; private set; }
+    public Collider2D Collider { get; private set; }
     public StatBase AttackStat { get; private set; }
     public IDamageable Target => _target;
 
@@ -23,8 +24,8 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     {
         base.Awake();
 
-        _characterController = GetComponent<CharacterController>();
-        Collider = GetComponent<Collider>();
+        _rb = GetComponent<Rigidbody2D>();
+        Collider = GetComponent<Collider2D>();
         StatManager.Initialize(Data, this);
         AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
     }
@@ -65,7 +66,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
 
         Vector3 dir = (_target.Collider.transform.position - transform.position).normalized;
 
-        _characterController.Move(dir * speed * Time.deltaTime);
+        _rb.linearVelocity = new Vector2(dir.x * speed, _rb.linearVelocity.y);
     }
 
 
