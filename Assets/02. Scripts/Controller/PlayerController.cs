@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using PlayerGroundStates;
@@ -83,6 +84,13 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     protected override void Update()
     {
         base.Update();
+        
+        Rotate();
+    }
+
+    private void FixedUpdate()
+    {
+        Movement();
     }
 
     /// <summary>
@@ -102,15 +110,17 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
             PlayerState.Fall => new FallState(),
             PlayerState.DoubleJump => new DoubleJumpState(),
             
-            PlayerState.Attack => new AttackState(StatManager.GetValue(StatType.AttackSpd), StatManager.GetValue(StatType.AttackRange)),
+            PlayerState.Attack => new AttackState(1, 1),
             _ => null
         };
     }
 
     public override void Movement()
     {
+        float speed = StatManager.GetValue(StatType.MoveSpeed) *
+                      (_isRunning ? StatManager.GetValue(StatType.RunMultiplier) : 1f);
         _rigidbody2D.linearVelocity =
-            new Vector2(MoveInput.x * StatManager.GetValue(StatType.MoveSpeed), _rigidbody2D.linearVelocityY);
+            new Vector2(MoveInput.x * speed, _rigidbody2D.linearVelocityY);
     }
 
     public void Rotate()
