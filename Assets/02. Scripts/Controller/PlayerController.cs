@@ -109,7 +109,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public override void Movement()
     {
-        
+        _rigidbody2D.linearVelocity =
+            new Vector2(MoveInput.x * StatManager.GetValue(StatType.MoveSpeed), _rigidbody2D.linearVelocityY);
     }
 
     public void Rotate()
