@@ -3,5 +3,8 @@ public enum PlayerState
     Idle,
     Move,
     Run,
-    Attack
+    Jump,
+    Fall,
+    DoubleJump,
+    Attack,
 }

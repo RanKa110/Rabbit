@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using PlayerStates;
+using PlayerGroundedStates;
+using PlayerAirStates;
+using PlayerAttackStates;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -13,8 +15,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private bool _attackTriggered;
 
     private List<IDamageable> _targets = new List<IDamageable>();
-    public bool IsTargetExists => _targets.Count > 0;
-
     public Vector2 MoveInput => _moveInput;
     public bool IsRunning => _isRunning;
 
@@ -63,8 +63,13 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         {
             PlayerState.Idle => new IdleState(),
             PlayerState.Move => new MoveState(),
-            PlayerState.Attack => new AttackState(StatManager.GetValue(StatType.AttackSpd), StatManager.GetValue(StatType.AttackRange)),
             PlayerState.Run => new RunState(),
+
+            PlayerState.Jump => new JumpState(),
+            PlayerState.Fall => new FallState(),
+            PlayerState.DoubleJump => new DoubleJumpState(),
+            
+            PlayerState.Attack => new AttackState(StatManager.GetValue(StatType.AttackSpd), StatManager.GetValue(StatType.AttackRange)),
             _ => null
         };
     }
