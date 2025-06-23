@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace PlayerGroundedStates
+namespace PlayerGroundStates
 {
     public class IdleState : IState<PlayerController, PlayerState>
     {

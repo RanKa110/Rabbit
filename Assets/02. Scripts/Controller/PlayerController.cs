@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using PlayerGroundedStates;
+using PlayerGroundStates;
 using PlayerAirStates;
 using PlayerAttackStates;
 using UnityEngine;
