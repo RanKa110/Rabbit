@@ -54,15 +54,14 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         _boxCollider2D = GetComponent<BoxCollider2D>();
         _inputController = GetComponent<InputController>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        
-        PlayerTable playerTable = TableManager.Instance.GetTable<PlayerTable>();
-        PlayerSO playerData = playerTable.GetDataByID(0);
-        StatManager.Initialize(playerData, null);
     }
 
     protected override void Start()
     {
         base.Start();
+        PlayerTable playerTable = TableManager.Instance.GetTable<PlayerTable>();
+        PlayerSO playerData = playerTable.GetDataByID(0);
+        StatManager.Initialize(playerData, null);
 
         var action = _inputController.PlayerActions;
         action.Move.performed += context => _moveInput = context.ReadValue<Vector2>();

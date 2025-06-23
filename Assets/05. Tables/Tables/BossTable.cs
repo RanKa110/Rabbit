@@ -8,11 +8,10 @@ public class BossTable : BaseTable<int, BossSO>
     public override void CreateTable()
     {
         Type = GetType();
-        DataDic.Clear();
 
-        //foreach(BossSO item in dataList)
-        //{
-        //    DataDic[item.ID] = item;
-        //}
+        foreach(BossSO item in dataList)
+        {
+            DataDic[item.ID] = item;
+        }
     }
 }

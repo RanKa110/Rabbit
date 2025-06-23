@@ -19,10 +19,11 @@ public abstract class BaseController<TController, TState> : MonoBehaviour where 
         StatusEffectManager = GetComponent<StatusEffectManager>();
         stateMachine = new StateMachine<TController, TState>();
         Controller = (TController)this;
+        SetupState();
+
     }
     protected virtual void Start()
     {
-        SetupState();
     }
 
     protected virtual void Update()

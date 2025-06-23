@@ -5,6 +5,7 @@ using System.Collections.Generic;
 [CreateAssetMenu(fileName = "BossData", menuName = "Scriptable Objects/BossSO")]
 public class BossSO : ScriptableObject, IStatProvider
 {
+    public int ID;
     public EnemyType Type;
 
     [Tooltip("Detection range for transition from Idle to Chasing")]
