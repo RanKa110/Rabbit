@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ff7720e333d4878469a7f138d27b4093, type: 3}
-  m_Name: PlayerTable
+  m_Script: {fileID: 11500000, guid: bf4222026d0602f4cb27548ddcad78db, type: 3}
+  m_Name: BossTable
   m_EditorClassIdentifier: 
   dataList:
-  - {fileID: 11400000, guid: 304102a0de7847e45a9fb8a96989fa6b, type: 2}
+  - {fileID: 11400000, guid: da142600cb17f694d9c5fc98dd458bc1, type: 2}
