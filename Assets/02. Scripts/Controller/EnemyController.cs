@@ -49,6 +49,8 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     public bool CanAttack { get; set; } = true;
     public float LastAttackTime { get; set; }
 
+    Collider2D IDamageable.Collider => throw new NotImplementedException();
+
     protected override void Awake()
     {
         base.Awake();

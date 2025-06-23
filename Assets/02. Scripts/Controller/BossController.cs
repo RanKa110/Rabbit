@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.Timeline;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(StatManager))]
@@ -31,7 +32,9 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
         _rb = GetComponent<Rigidbody2D>();
         Collider = GetComponent<Collider2D>();
-        StatManager.Initialize(Data, this);
+        BossTable bossTable = TableManager.Instance.GetTable<BossTable>();
+        BossSO bossData = bossTable.GetDataByID(0);
+        StatManager.Initialize(bossData, this);
         AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
     }
 
