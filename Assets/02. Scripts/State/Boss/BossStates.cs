@@ -8,22 +8,32 @@ namespace BossStates
     {
         public void OnEnter(BossController owner)
         {
+            Debug.Log("IdleState.OnEnter");
         }
 
         public void OnUpdate(BossController owner)
         {
+            Debug.Log("IdleState.OnUpdate");
         }
 
         public void OnExit(BossController entity)
         {
+            Debug.Log("IdleState.OnExit");
         }
 
 
         public BossState CheckTransition(BossController owner)
         {
-            if (owner.Target != null && Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position) <= owner.DetectionRange)
+            if (owner.Target != null)
             {
-                return BossState.Chasing;
+                float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
+
+                Debug.Log($"거리={distance}, 감지범위={owner.DetectionRange}");
+
+                if (distance <= owner.DetectionRange)
+                {
+                    return BossState.Chasing;
+                }
             }
 
             return BossState.Idle;
@@ -32,36 +42,43 @@ namespace BossStates
 
     public class ChasingState : IState<BossController, BossState>
     {
-       
         public void OnEnter(BossController owner)
         {
+            Debug.Log("ChasingState.OnEnter");
         }
 
         public void OnUpdate(BossController owner)
         {
+            Debug.Log("ChasingState.OnUpdate → Movement()");
             owner.Movement();
         }
 
         public void OnExit(BossController entity)
         {
+            Debug.Log("ChasingState.OnExit");
         }
 
         public BossState CheckTransition(BossController owner)
         {
+            //  사망 체크 우선
             if (owner.IsDead)
             {
+                Debug.Log("→ Chasing → Die");
                 return BossState.Die;
             }
 
-            if (owner.Target == null)
-            {
-                return BossState.Idle;
-            }
+            //if (owner.Target == null)
+            //{
+            //    return BossState.Idle;
+            //}
 
             float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
 
+            Debug.Log($"[Chasing.CheckTransition] dist={distance}, atkRange={owner.StatManager.GetValue(StatType.AttackRange)}");
+
             if (distance <= owner.StatManager.GetValue(StatType.AttackRange))
             {
+                Debug.Log("→ Chasing → Attack");
                 return BossState.Attack;
             }
 
@@ -83,6 +100,7 @@ namespace BossStates
 
         public void OnEnter(BossController owner)
         {
+            Debug.Log("AttackState.OnEnter");
             owner.StartCoroutine(DoAttack(owner));
         }
 

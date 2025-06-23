@@ -25,6 +25,8 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     protected override void Awake()
     {
+        Debug.Log("▶▶▶ BaseController.SetupState should run now");
+
         base.Awake();
 
         _rb = GetComponent<Rigidbody2D>();
@@ -35,9 +37,9 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     protected override void Update()
     {
-        base.Update();
+        FindTarget();           //  타겟 먼저 찾기
 
-        FindTarget();
+        base.Update();
     }
 
     protected override IState<BossController, BossState> GetState(BossState state) => state switch
@@ -55,6 +57,8 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     //  2D 플랫폼 액션 이동
     public override void Movement()
     {
+        Debug.Log("보스 이동 시작!");
+
         if (_target == null)
         {
             return;
@@ -62,7 +66,9 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
         float speed = StatManager.GetValue(StatType.MoveSpeed);
 
-        Vector2 dir = (_target.Collider.transform.position - transform.position).normalized;
+        Vector2 origin = (Vector2)transform.position;
+        Vector2 targetPos = _target.Collider.transform.position;
+        Vector2 dir = (targetPos - origin).normalized;
 
         _rb.linearVelocity = new Vector2(dir.x * speed, _rb.linearVelocity.y);
     }
@@ -70,6 +76,8 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     //  보스 기본 공격
     public void BasicAttack()
     {
+        Debug.Log("보스 기본 공격 시작!");
+
         if (_isDead || _target == null)
         {
             return;
@@ -85,6 +93,8 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     public override void FindTarget()
     {
+        Debug.Log("Boss FindTarget()");
+
         if (_target != null && !_target.IsDead)
         {
             return;
