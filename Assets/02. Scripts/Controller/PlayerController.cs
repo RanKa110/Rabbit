@@ -1,23 +1,40 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using PlayerStates;
+using PlayerGroundStates;
+using PlayerAirStates;
+using PlayerAttackStates;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(BoxCollider2D))]
+[RequireComponent(typeof(InputController))]
 public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable
 {
-    private CharacterController _characterController;
-
+    private Rigidbody2D _rigidbody2D;
+    private BoxCollider2D _boxCollider2D;
+    private InputController _inputController;
+    private SpriteRenderer _spriteRenderer;
+    
     private Vector2 _moveInput;
     private bool _isRunning;
+    private bool _isCrouch;
     private bool _attackTriggered;
+    private bool _jumpTriggered;
+    private bool _doubleJumpAvailable = true;
 
     private List<IDamageable> _targets = new List<IDamageable>();
-    public bool IsTargetExists => _targets.Count > 0;
-
+    
+    
     public Vector2 MoveInput => _moveInput;
     public bool IsRunning => _isRunning;
+    public bool IsCrouch => _isCrouch;
+    public bool IsGrounded => _boxCollider2D.IsTouchingLayers(LayerMask.GetMask("Ground"));
+    
+    public float VelocityY => _rigidbody2D.linearVelocity.y;
+    public bool JumpTriggered => _jumpTriggered;
+    public bool CanDoubleJump => _doubleJumpAvailable;
 
     public bool AttackTriggered
     {
@@ -33,7 +50,10 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     protected override void Awake()
     {
         base.Awake();
-        _characterController = GetComponent<CharacterController>();
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+        _boxCollider2D = GetComponent<BoxCollider2D>();
+        _inputController = GetComponent<InputController>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
         
         PlayerTable playerTable = TableManager.Instance.GetTable<PlayerTable>();
         PlayerSO playerData = playerTable.GetDataByID(0);
@@ -43,14 +63,34 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     protected override void Start()
     {
         base.Start();
+
+        var action = _inputController.PlayerActions;
+        action.Move.performed += context => _moveInput = context.ReadValue<Vector2>();
+        action.Move.canceled += _ => _moveInput = Vector2.zero;
+
+        action.Run.performed += _ => _isRunning = true;
+        action.Run.canceled += _ => _isRunning = false;
+
+        action.Crouch.performed += _ => _isCrouch = true;
+        action.Crouch.canceled += _ => _isCrouch = false; 
+        
+        action.Jump.performed += _ => _jumpTriggered = true;
+        action.Jump.canceled += _ => _jumpTriggered = false;
+
+        action.Attack.performed += _ => _attackTriggered = true;
+        action.Attack.canceled += _ => _attackTriggered = false;
     }
 
     protected override void Update()
     {
         base.Update();
-
+        
         Rotate();
-        FindTarget();
+    }
+
+    private void FixedUpdate()
+    {
+        Movement();
     }
 
     /// <summary>
@@ -64,20 +104,31 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         {
             PlayerState.Idle => new IdleState(),
             PlayerState.Move => new MoveState(),
-            PlayerState.Attack => new AttackState(StatManager.GetValue(StatType.AttackSpd), StatManager.GetValue(StatType.AttackRange)),
             PlayerState.Run => new RunState(),
+
+            PlayerState.Jump => new JumpState(),
+            PlayerState.Fall => new FallState(),
+            PlayerState.DoubleJump => new DoubleJumpState(),
+            
+            PlayerState.Attack => new AttackState(1, 1),
             _ => null
         };
     }
 
     public override void Movement()
     {
-        
+        float speed = StatManager.GetValue(StatType.MoveSpeed) *
+                      (_isRunning ? StatManager.GetValue(StatType.RunMultiplier) : 1f);
+        _rigidbody2D.linearVelocity =
+            new Vector2(MoveInput.x * speed, _rigidbody2D.linearVelocityY);
     }
 
     public void Rotate()
     {
-        
+        if (MoveInput.x > 0.01f)
+            _spriteRenderer.flipX = false;
+        else if (MoveInput.x < -0.01f)
+            _spriteRenderer.flipX = true;
     }
 
     public void Attack()
