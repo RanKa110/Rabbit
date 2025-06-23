@@ -4,11 +4,10 @@ using PlayerStates;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(BoxCollider2D))]
 public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable
 {
-    private CharacterController _characterController;
-
     private Vector2 _moveInput;
     private bool _isRunning;
     private bool _attackTriggered;
@@ -34,7 +33,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     protected override void Awake()
     {
         base.Awake();
-        _characterController = GetComponent<CharacterController>();
         
         PlayerTable playerTable = TableManager.Instance.GetTable<PlayerTable>();
         PlayerSO playerData = playerTable.GetDataByID(0);
