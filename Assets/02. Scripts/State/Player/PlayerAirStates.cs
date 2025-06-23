@@ -2,13 +2,13 @@ using UnityEngine;
 
 namespace PlayerAirStates
 {
-    public class JumpState : IState<PlayerController, PlayerState>
+    public class JumpState : PlayerAirState
     {
         public void OnEnter(PlayerController owner)
         {
         }
 
-        public void OnUpdate(PlayerController owner)
+        public override void OnUpdate(PlayerController owner)
         {
         }
 
@@ -16,19 +16,19 @@ namespace PlayerAirStates
         {
         }
 
-        public PlayerState CheckTransition(PlayerController owner)
+        public override PlayerState CheckTransition(PlayerController owner)
         {
             return PlayerState.Jump;
         }
     }
     
-    public class FallState : IState<PlayerController, PlayerState>
+    public class FallState : PlayerAirState
     {
         public void OnEnter(PlayerController owner)
         {
         }
 
-        public void OnUpdate(PlayerController owner)
+        public override void OnUpdate(PlayerController owner)
         {
         }
 
@@ -36,19 +36,19 @@ namespace PlayerAirStates
         {
         }
 
-        public PlayerState CheckTransition(PlayerController owner)
+        public override PlayerState CheckTransition(PlayerController owner)
         {
             return PlayerState.Fall;
         }
     }
     
-    public class DoubleJumpState : IState<PlayerController, PlayerState>
+    public class DoubleJumpState : PlayerAirState
     {
         public void OnEnter(PlayerController owner)
         {
         }
 
-        public void OnUpdate(PlayerController owner)
+        public override void OnUpdate(PlayerController owner)
         {
         }
 
@@ -56,7 +56,7 @@ namespace PlayerAirStates
         {
         }
 
-        public PlayerState CheckTransition(PlayerController owner)
+        public override PlayerState CheckTransition(PlayerController owner)
         {
             return PlayerState.Jump;
         }

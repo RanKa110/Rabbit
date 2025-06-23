@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace PlayerAttackStates
 {
-    public class AttackState : IState<PlayerController, PlayerState>
+    public class AttackState : PlayerAttackState
     {
         private readonly float _atkSpd;
         private readonly float _atkRange;
@@ -19,7 +19,7 @@ namespace PlayerAttackStates
         {
         }
 
-        private IEnumerator DoAttack(PlayerController owner)
+        protected override IEnumerator DoAttack(PlayerController owner)
         {
             yield return new WaitForSeconds(1f / _atkSpd);
             owner.AttackAllTargets();
@@ -34,7 +34,7 @@ namespace PlayerAttackStates
         {
         }
 
-        public PlayerState CheckTransition(PlayerController owner)
+        public override PlayerState CheckTransition(PlayerController owner)
         {
             return PlayerState.Idle;
         }

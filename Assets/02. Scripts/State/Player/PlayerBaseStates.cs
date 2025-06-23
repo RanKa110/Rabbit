@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-public abstract class PlayerGroundedState : IState<PlayerController, PlayerState>
+public abstract class PlayerGroundState : IState<PlayerController, PlayerState>
 {
     public virtual void OnEnter(PlayerController owner) { }
     public abstract void OnUpdate(PlayerController owner);

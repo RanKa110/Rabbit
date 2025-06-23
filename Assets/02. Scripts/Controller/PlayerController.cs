@@ -8,15 +8,31 @@ using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(BoxCollider2D))]
+[RequireComponent(typeof(InputController))]
 public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable
 {
+    private Rigidbody2D _rigidbody2D;
+    private BoxCollider2D _boxCollider2D;
+    private InputController _inputController;
+    
     private Vector2 _moveInput;
     private bool _isRunning;
+    private bool _isCrouch;
     private bool _attackTriggered;
+    private bool _jumpTriggered;
+    private bool _doubleJumpAvailable = true;
 
     private List<IDamageable> _targets = new List<IDamageable>();
+    
+    
     public Vector2 MoveInput => _moveInput;
     public bool IsRunning => _isRunning;
+    public bool IsCrouch => _isCrouch;
+    public bool IsGrounded => _boxCollider2D.IsTouchingLayers(LayerMask.GetMask("Ground"));
+    
+    public float VelocityY => _rigidbody2D.linearVelocity.y;
+    public bool JumpTriggered => _jumpTriggered;
+    public bool CanDoubleJump => _doubleJumpAvailable;
 
     public bool AttackTriggered
     {
@@ -32,6 +48,9 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     protected override void Awake()
     {
         base.Awake();
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+        _boxCollider2D = GetComponent<BoxCollider2D>();
+        _inputController = GetComponent<InputController>();
         
         PlayerTable playerTable = TableManager.Instance.GetTable<PlayerTable>();
         PlayerSO playerData = playerTable.GetDataByID(0);
@@ -41,6 +60,24 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     protected override void Start()
     {
         base.Start();
+
+        var action = _inputController.PlayerActions;
+        action.Move.performed += context => _moveInput = context.ReadValue<Vector2>();
+        action.Move.canceled += _ => _moveInput = Vector2.zero;
+
+        action.Run.performed += _ => _isRunning = true;
+        action.Run.canceled += _ => _isRunning = false;
+
+        action.Crouch.performed += _ => _isCrouch = true;
+        action.Crouch.canceled += _ => _isCrouch = false; 
+        
+        action.Jump.performed += _ => _jumpTriggered = true;
+        action.Jump.canceled += _ => _jumpTriggered = false;
+
+        action.Attack.performed += _ => _attackTriggered = true;
+        action.Attack.canceled += _ => _attackTriggered = false;
+        
+        
     }
 
     protected override void Update()
