@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Timeline;
+using BossStates;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(StatManager))]
@@ -32,6 +33,11 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
         _rb = GetComponent<Rigidbody2D>();
         Collider = GetComponent<Collider2D>();
+        
+    }
+
+    protected override void Start()
+    {
         BossTable bossTable = TableManager.Instance.GetTable<BossTable>();
         BossSO bossData = bossTable.GetDataByID(0);
         StatManager.Initialize(bossData, this);
@@ -40,20 +46,19 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     protected override void Update()
     {
-        FindTarget();           //  타겟 먼저 찾기
-
         base.Update();
+        FindTarget();           //  타겟 먼저 찾기
     }
 
     protected override IState<BossController, BossState> GetState(BossState state) => state switch
     {
-        BossState.Idle => new BossStates.IdleState(),
-        BossState.Chasing => new BossStates.ChasingState(),
-        BossState.Attack => new BossStates.AttackState(StatManager.GetValue(StatType.AttackSpd), StatManager.GetValue(StatType.AttackRange)),
-        BossState.Pattern1 => new BossStates.PatternState(0),
-        BossState.Pattern2 => new BossStates.PatternState(1),
-        BossState.Pattern3 => new BossStates.PatternState(2),
-        BossState.Die => new BossStates.DieState(),
+        BossState.Idle => new IdleState(),
+        BossState.Chasing => new ChasingState(),
+        BossState.Attack => new AttackState(1, 1), // 나중에 보스 기획 단계에서 수정하기
+        BossState.Pattern1 => new PatternState(0),
+        BossState.Pattern2 => new PatternState(1),
+        BossState.Pattern3 => new PatternState(2),
+        BossState.Die => new DieState(),
         _ => null
     };
 
