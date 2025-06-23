@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(BoxCollider2D))]
 [RequireComponent(typeof(InputController))]
-public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable
+public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable, IDamageable
 {
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
@@ -25,7 +25,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private bool _doubleJumpAvailable = true;
 
     private List<IDamageable> _targets = new List<IDamageable>();
-    
+
+    public bool _isDead;
     
     public Vector2 MoveInput => _moveInput;
     public bool IsRunning => _isRunning;
@@ -46,6 +47,13 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public IDamageable Target { get; private set; }
     public Transform Transform  => transform;
 
+    public bool IsDead
+    {
+        get => _isDead;
+        private set => _isDead = value;
+    }
+
+    public Collider2D Collider { get; private set; }
 
     protected override void Awake()
     {
@@ -54,6 +62,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         _boxCollider2D = GetComponent<BoxCollider2D>();
         _inputController = GetComponent<InputController>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
+
+        Collider = GetComponent<Collider2D>();
     }
 
     protected override void Start()
@@ -150,5 +160,16 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    public void TakeDamage(IAttackable attacker)
+    {
+        Debug.Log("Player ▶ TakeDamage()");
+    }
+
+    public void Dead()
+    {
+        IsDead = true;
+        Debug.Log("Player ▶ Dead()");
     }
 }

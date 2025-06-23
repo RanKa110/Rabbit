@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ad04305043e1214fa364e307e06905a, type: 3}
   m_Name: BossData
   m_EditorClassIdentifier: 
-  Type: 2
-  detectionRange: 10
+  ID: 0
+  Type: 3
+  detectionRange: 100
   projectilePrefab: {fileID: 0}
   parryChance: 0.1
   attackCooldown: 1
@@ -43,3 +44,6 @@ MonoBehaviour:
   - StatType: 8
     ModifierType: 0
     Value: 1.5
+  - StatType: 6
+    ModifierType: 0
+    Value: 2

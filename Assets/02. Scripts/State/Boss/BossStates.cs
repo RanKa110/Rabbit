@@ -24,11 +24,11 @@ namespace BossStates
 
         public BossState CheckTransition(BossController owner)
         {
+            Debug.Log("▶ IdleState.CheckTransition");
+
             if (owner.Target != null)
             {
                 float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
-
-                Debug.Log($"거리={distance}, 감지범위={owner.DetectionRange}");
 
                 if (distance <= owner.DetectionRange)
                 {

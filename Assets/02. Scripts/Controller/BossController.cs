@@ -33,7 +33,6 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
         _rb = GetComponent<Rigidbody2D>();
         Collider = GetComponent<Collider2D>();
-        
     }
 
     protected override void Start()
@@ -109,11 +108,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         }
 
         var playerObj = GameObject.FindGameObjectWithTag("Player");
-
-        if (playerObj != null)
-        {
-            _target = playerObj.GetComponent<IDamageable>();
-        }
+        _target = playerObj.GetComponent<IDamageable>();
     }
 
     public void TakeDamage(IAttackable attacker)
