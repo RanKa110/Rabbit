@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2774461076374718840}
   - component: {fileID: 7216635425183296736}
   - component: {fileID: 3405123027388337283}
+  - component: {fileID: 4049579217143121636}
   m_Layer: 6
   m_Name: HomingEnemy
   m_TagString: Enemy
@@ -100,9 +101,9 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.5, y: 1}
-  m_Direction: 0
+  m_Offset: {x: 0.01530614, y: -0.0051021245}
+  m_Size: {x: 0.22449028, y: 0.19898032}
+  m_Direction: 1
 --- !u!212 &1443659955797586986
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -147,7 +148,7 @@ SpriteRenderer:
   m_SortingLayerID: 231875689
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: 6867809341995509054, guid: be1ebdaec2b24974ca818641ddf57145, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 39e751eaea0d74241807a5a9514c6a5d, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -168,7 +169,7 @@ Animator:
   m_GameObject: {fileID: 544841200907268850}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 9d0992eb5089338488c66561702e9d34, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -222,13 +223,31 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 8
-  projectilePrefab: {fileID: 0}
+  minAttackDistance: 3
+  hitEffectPrefab: {fileID: 0}
+--- !u!114 &4049579217143121636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 544841200907268850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 152a13b62d04c5b4cb119f16a6cc211e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 0
+  moveSpeed: 2
+  attackDamage: 10
+  attackCooldown: 1
+  detectionRange: 10
+  attackRange: 2
+  currentState: 0
   homingProjectilePrefab: {fileID: 7804515417108403332, guid: b97e6088875bc574d9427c0e73507d6b, type: 3}
   firePoint: {fileID: 3646356536957988663}
-  projectileSpeed: 10
-  minAttackDistance: 3
-  monsterType: 2
-  hitEffectPrefab: {fileID: 5046881502283555390, guid: c358351990a7d7c46a195f6be7092695, type: 3}
+  minAttackDistance: 5
 --- !u!1 &9121734316225061334
 GameObject:
   m_ObjectHideFlags: 0
