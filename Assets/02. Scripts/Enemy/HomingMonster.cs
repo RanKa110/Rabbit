@@ -2,14 +2,13 @@ using UnityEngine;
 using System.Collections;
 using TMPro;
 
-// 원거리 몬스터 클래스
-public class RangedMonster : MonsterBase
+// 유도 몬스터 클래스
+public class HomingMonster : MonsterBase
 {
-    [Header("원거리 공격 설정")]
-    public GameObject projectilePrefab;
+    [Header("유도 공격 설정")]
+    public GameObject homingProjectilePrefab;
     public Transform firePoint;
-    public float projectileSpeed = 10f;
-    public float minAttackDistance = 3f; // 최소 공격 거리
+    public float minAttackDistance = 5f; // 최소 공격 거리 (원거리보다 더 멈)
     
     // EnemyController 참조
     private EnemyController enemyController;
@@ -17,14 +16,15 @@ public class RangedMonster : MonsterBase
     protected override void Start()
     {
         base.Start();
-        attackRange = 8f; // 원거리 공격 범위
-        moveSpeed = 1.5f; // 원거리 몬스터는 조금 느림
+        attackRange = 10f; // 유도 공격 범위 (더 긴 사거리)
+        moveSpeed = 1.2f; // 유도 몬스터는 더 느림
+        attackCooldown = 2f; // 더 긴 쿨다운
         
         // EnemyController 참조 가져오기
         enemyController = GetComponent<EnemyController>();
         if (enemyController == null)
         {
-            Debug.LogError("EnemyController component not found on RangedMonster!");
+            Debug.LogError("EnemyController component not found on HomingMonster!");
         }
     }
     
@@ -69,20 +69,20 @@ public class RangedMonster : MonsterBase
         
         if (canAttack && !isAttacking)
         {
-            StartCoroutine(RangedAttack());
+            StartCoroutine(HomingAttack());
         }
     }
     
     // 공용 메서드로 변경하여 EnemyController에서 호출 가능하도록 함
-    public void PerformRangedAttack()
+    public void PerformHomingAttack()
     {
         if (canAttack && !isAttacking)
         {
-            StartCoroutine(RangedAttack());
+            StartCoroutine(HomingAttack());
         }
     }
     
-    private IEnumerator RangedAttack()
+    private IEnumerator HomingAttack()
     {
         isAttacking = true;
         canAttack = false;
@@ -97,8 +97,8 @@ public class RangedMonster : MonsterBase
         // 애니메이션 대기
         yield return new WaitForSeconds(0.3f);
         
-        // 투사체 발사
-        if (projectilePrefab != null && firePoint != null)
+        // 유도 투사체 발사
+        if (homingProjectilePrefab != null && firePoint != null)
         {
             Transform targetTransform = null;
             
@@ -115,35 +115,19 @@ public class RangedMonster : MonsterBase
             
             if (targetTransform != null)
             {
-                GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
+                GameObject projectile = Instantiate(homingProjectilePrefab, firePoint.position, Quaternion.identity);
                 
-                // 타겟 방향으로 발사
-                Vector2 direction = (targetTransform.position - firePoint.position).normalized;
-                
-                // 투사체 컴포넌트 설정
-                Projectile proj = projectile.GetComponent<Projectile>();
-                if (proj != null)
+                // 유도 투사체가 알아서 타겟을 추적하도록 함
+                HomingProjectile homing = projectile.GetComponent<HomingProjectile>();
+                if (homing != null)
                 {
+                    homing.SetTarget(targetTransform);
+                    
                     // EnemyController의 스탯을 사용하거나 자체 스탯 사용
-                    float damage = enemyController != null ? 
+                    homing.damage = enemyController != null ? 
                         enemyController.StatManager.GetValue(StatType.AttackPow) : 
                         attackDamage;
-                    
-                    proj.Initialize(direction, projectileSpeed, damage);
                 }
-                else
-                {
-                    // 기본 투사체 움직임
-                    Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
-                    if (projRb != null)
-                    {
-                        projRb.linearVelocity = direction * projectileSpeed;
-                    }
-                }
-                
-                // 투사체 회전
-                float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-                projectile.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
             }
         }
         
@@ -152,7 +136,7 @@ public class RangedMonster : MonsterBase
         
         isAttacking = false;
         
-        // 쿨다운 대기
+        // 쿨다운 대기 (유도 미사일은 좀 더 긴 쿨다운)
         yield return new WaitForSeconds(attackCooldown);
         canAttack = true;
     }
