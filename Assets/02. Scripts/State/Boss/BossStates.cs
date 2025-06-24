@@ -49,8 +49,8 @@ namespace BossStates
 
         public void OnUpdate(BossController owner)
         {
-            Debug.Log("ChasingState.OnUpdate → Movement()");
             owner.Movement();
+            Debug.Log("ChasingState.OnUpdate → Movement()");
         }
 
         public void OnExit(BossController entity)
@@ -76,12 +76,13 @@ namespace BossStates
 
             //  사거리 + 약간의 여유
             float atkRange = owner.StatManager.GetValue(StatType.AttackRange);
-            float epsilon = 0.1f;
+            const float epsilon = 0.1f;
+            float threshold = atkRange + epsilon;
 
-            //Debug.Log($"distance = {distance}, attackRange = {atkRange + epsilon}");
+            Debug.Log($"distance = {distance}, attackRange = {atkRange + epsilon}");
 
             //  비교
-            if (distance <= atkRange /*+ epsilon*/)
+            if (distance <= threshold)
             {
                 Debug.Log("→ Chasing → Attack");
                 return BossState.Attack;

@@ -43,6 +43,11 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
         _rb = GetComponent<Rigidbody2D>();
         Collider = GetComponent<Collider2D>();
+
+        //  Rigidbody2D 물리 세팅: 저항값 제거
+        _rb.linearDamping = 0f;
+        _rb.angularDamping = 0f;
+        _rb.sleepMode = RigidbodySleepMode2D.NeverSleep;
     }
 
     protected override void Start()
@@ -74,20 +79,19 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     //  2D 플랫폼 액션 이동
     public override void Movement()
     {
-        Debug.Log("보스 이동 시작!");
-
         if (_target == null)
         {
             return;
         }
 
         float speed = StatManager.GetValue(StatType.MoveSpeed);
+        Vector2 origin = _rb.position;
+        Vector2 goal = _target.Collider.bounds.center;
+        Vector2 dir = (goal - origin).normalized;
 
-        Vector2 origin = (Vector2)transform.position;
-        Vector2 targetPos = _target.Collider.transform.position;
-        Vector2 dir = (targetPos - origin).normalized;
+        Vector2 nextPos = origin + dir * speed * Time.fixedDeltaTime;
 
-        _rb.linearVelocity = new Vector2(dir.x * speed, _rb.linearVelocity.y);
+        _rb.MovePosition(nextPos);
     }
 
     //  보스 기본 공격
