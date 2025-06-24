@@ -106,7 +106,7 @@ public abstract class MonsterBase : MonoBehaviour, IAttackable
     
     protected virtual void IdleBehavior()
     {
-        // 기본 대기 동작
+        // 기본 대기 동작 - X축 속도를 0으로 설정
         rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
     }
     

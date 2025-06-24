@@ -10,15 +10,25 @@ public class MeleeMonster : MonsterBase
     public float attackRadius = 1.5f;
     public LayerMask playerLayer;
     
+    // EnemyController 참조
+    private EnemyController enemyController;
+    
     protected override void Start()
     {
         base.Start();
         attackRange = 1.5f; // 근거리 공격 범위
+        
+        // EnemyController 참조 가져오기
+        enemyController = GetComponent<EnemyController>();
+        if (enemyController == null)
+        {
+            Debug.LogError("EnemyController component not found on MeleeMonster!");
+        }
     }
     
     protected override void AttackBehavior()
     {
-        // 이동 멈춤
+        // 이동 멈춤 - X축 속도를 0으로
         rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
         
         // 공격 쿨다운 체크
@@ -54,8 +64,18 @@ public class MeleeMonster : MonsterBase
             {
                 if (hit.CompareTag("Player"))
                 {
-                    // 안전한 데미지 처리
-                    DealDamageToPlayer(hit.gameObject, attackDamage);
+                    IDamageable damageable = hit.GetComponent<IDamageable>();
+                    if (damageable != null && enemyController != null)
+                    {
+                        // EnemyController의 SetAttackTarget과 Attack 사용
+                        enemyController.SetAttackTarget(damageable);
+                        enemyController.Attack();
+                    }
+                    else if (damageable == null)
+                    {
+                        // 안전한 데미지 처리 (호환성 유지)
+                        DealDamageToPlayer(hit.gameObject, attackDamage);
+                    }
                     
                     // 넉백 효과
                     Vector2 knockbackDir = (hit.transform.position - transform.position).normalized;

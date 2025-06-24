@@ -12,7 +12,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     private bool _isDead;
 
     public bool IsDead => _isDead;
-    public Collider Collider { get; private set; }
+    public Collider2D Collider { get; private set; }
     public StatBase AttackStat { get; private set; }
     public IDamageable Target => _target;
 
@@ -23,18 +23,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     public Transform attackPoint;
     public float attackRadius = 1.5f;
     public LayerMask playerLayer;
-    
-    [Header("원거리 공격 설정")]
-    public GameObject projectilePrefab;
-    public GameObject homingProjectilePrefab;
-    public Transform firePoint;
-    public float projectileSpeed = 10f;
     public float minAttackDistance = 3f;
-    
-    public enum MonsterType { Melee, Ranged, Homing }
-    
-    [Header("몬스터 타입")]
-    public MonsterType monsterType = MonsterType.Melee;
     
     [Header("이펙트")]
     public GameObject hitEffectPrefab;
@@ -44,12 +33,13 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     
+    // 몬스터 컴포넌트 참조
+    private MonsterBase _monsterBase;
+    
     // 상태 변수
     public bool IsAttacking { get; set; }
     public bool CanAttack { get; set; } = true;
     public float LastAttackTime { get; set; }
-
-    Collider2D IDamageable.Collider => throw new NotImplementedException();
 
     protected override void Awake()
     {
@@ -59,9 +49,16 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        Collider = GetComponent<Collider>();
+        Collider = GetComponent<Collider2D>();
         StatManager.Initialize(Data, this);
         AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
+        
+        // 몬스터 타입별 컴포넌트 참조
+        _monsterBase = GetComponent<MonsterBase>();
+        if (_monsterBase == null)
+        {
+            Debug.LogWarning($"MonsterBase component not found on {gameObject.name}");
+        }
     }
 
     protected override void Start()
@@ -81,21 +78,9 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     {
         EnemyState.Idle => new EnemyStates.IdleState(),
         EnemyState.Chasing => new EnemyStates.ChasingState(),
-        EnemyState.Attack => monsterType switch
-        {
-            MonsterType.Melee => new EnemyStates.MeleeAttackState(
-                StatManager.GetValue(StatType.AttackSpd),
-                StatManager.GetValue(StatType.AttackRange)),
-            MonsterType.Ranged => new EnemyStates.RangedAttackState(
-                StatManager.GetValue(StatType.AttackSpd),
-                StatManager.GetValue(StatType.AttackRange)),
-            MonsterType.Homing => new EnemyStates.HomingAttackState(
-                StatManager.GetValue(StatType.AttackSpd),
-                StatManager.GetValue(StatType.AttackRange)),
-            _ => new EnemyStates.MeleeAttackState(
-                StatManager.GetValue(StatType.AttackSpd),
-                StatManager.GetValue(StatType.AttackRange))
-        },
+        EnemyState.Attack => new EnemyStates.AttackState(
+            StatManager.GetValue(StatType.AttackSpd),
+            StatManager.GetValue(StatType.AttackRange)),
         EnemyState.Die => new EnemyStates.DieState(),
         _ => null
     };
@@ -118,6 +103,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         }
         else if (_rigidbody2D != null)
         {
+            // X축만 이동, Y축은 중력에 맡김
             _rigidbody2D.linearVelocity = new Vector2(dir.x * speed, _rigidbody2D.linearVelocity.y);
         }
     }
@@ -146,6 +132,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         {
             if (_rigidbody2D != null)
             {
+                // X축만 정지, Y축은 중력에 맡김
                 _rigidbody2D.linearVelocity = new Vector2(0, _rigidbody2D.linearVelocity.y);
             }
             return;
@@ -157,6 +144,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         }
         else if (_rigidbody2D != null)
         {
+            // X축만 이동, Y축은 중력에 맡김
             _rigidbody2D.linearVelocity = new Vector2(dir.x * speed, _rigidbody2D.linearVelocity.y);
         }
     }
@@ -166,84 +154,10 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         _target?.TakeDamage(this);
     }
 
-    public void MeleeAttack()
+    // Melee 공격을 위한 타겟 설정 메서드
+    public void SetAttackTarget(IDamageable target)
     {
-        if (attackPoint != null)
-        {
-            Collider2D[] hitPlayers = Physics2D.OverlapCircleAll(attackPoint.position, attackRadius, playerLayer);
-            
-            foreach (Collider2D hit in hitPlayers)
-            {
-                if (hit.CompareTag("Player"))
-                {
-                    IDamageable damageable = hit.GetComponent<IDamageable>();
-                    if (damageable != null)
-                    {
-                        damageable.TakeDamage(this);
-                    }
-                    
-                    // 넉백 효과
-                    Vector2 knockbackDir = (hit.transform.position - transform.position).normalized;
-                    Rigidbody2D playerRb = hit.GetComponent<Rigidbody2D>();
-                    if (playerRb != null)
-                    {
-                        playerRb.AddForce(knockbackDir * 5f, ForceMode2D.Impulse);
-                    }
-                }
-            }
-        }
-    }
-
-    public void RangedAttack()
-    {
-        if (projectilePrefab != null && firePoint != null && _target != null)
-        {
-            GameObject projectile = Instantiate(projectilePrefab, firePoint.position, Quaternion.identity);
-            
-            // 플레이어 방향으로 발사
-            Vector2 direction = (_target.Collider.transform.position - firePoint.position).normalized;
-            
-            // 투사체 컴포넌트 설정
-            Projectile proj = projectile.GetComponent<Projectile>();
-            if (proj != null)
-            {
-                proj.Initialize(direction, projectileSpeed, StatManager.GetValue(StatType.AttackPow));
-            }
-            else
-            {
-                // 기본 투사체 움직임
-                Rigidbody2D projRb = projectile.GetComponent<Rigidbody2D>();
-                if (projRb != null)
-                {
-                    projRb.linearVelocity = direction * projectileSpeed;
-                }
-            }
-            
-            // 투사체 회전
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            projectile.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        }
-    }
-
-    public void HomingAttack()
-    {
-        if (homingProjectilePrefab != null && firePoint != null && _target != null)
-        {
-            GameObject projectile = Instantiate(homingProjectilePrefab, firePoint.position, Quaternion.identity);
-            
-            // 유도 투사체 설정
-            HomingProjectile homing = projectile.GetComponent<HomingProjectile>();
-            if (homing != null)
-            {
-                homing.SetTarget(_target.Collider.transform);
-                homing.damage = StatManager.GetValue(StatType.AttackPow);
-            }
-            
-            // 초기 방향 설정
-            Vector2 direction = (_target.Collider.transform.position - firePoint.position).normalized;
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            projectile.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-        }
+        _target = target;
     }
 
     public override void FindTarget()
@@ -325,7 +239,8 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     // 공격 범위 시각화 (에디터용)
     private void OnDrawGizmosSelected()
     {
-        if (monsterType == MonsterType.Melee && attackPoint != null)
+        // 근거리 공격 범위 (MeleeMonster가 있을 때만)
+        if (GetComponent<MeleeMonster>() != null && attackPoint != null)
         {
             Gizmos.color = Color.red;
             Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
