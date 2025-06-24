@@ -3,7 +3,7 @@ public enum PlayerState
     Idle,
     Move,
     Crouch,
-    Run,
+    Dash,
     
     Jump,
     Fall,

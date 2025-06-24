@@ -15,7 +15,7 @@ namespace PlayerAttackStates
             this._atkRange = atkRange;
         }
 
-        public void OnEnter(PlayerController owner)
+        public override void OnEnter(PlayerController owner)
         {
         }
 
@@ -26,11 +26,11 @@ namespace PlayerAttackStates
             _attackDone = true;
         }
 
-        public void OnUpdate(PlayerController owner)
+        public override void OnUpdate(PlayerController owner)
         {
         }
 
-        public void OnExit(PlayerController owner)
+        public override void OnExit(PlayerController owner)
         {
         }
 
