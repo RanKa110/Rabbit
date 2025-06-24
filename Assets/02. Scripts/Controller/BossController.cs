@@ -35,7 +35,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     public IDamageable Target => _target;
     public StatBase AttackStat { get; private set; }
     public float DetectionRange => Data.detectionRange;
-    public BossState CurrentStateKey => _currentStateKey;
+    public BossState CurrentStateKey => CurrentState;
 
     public float AttackCooldownValue => Data.attackCooldown;
     public int PatternCount => Data.PatternDelays.Length;
@@ -48,6 +48,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         _rb = GetComponent<Rigidbody2D>();
         _collider = GetComponent<Collider2D>();
 
+        //  물리 세팅
         _rb.linearDamping = 0f;
         _rb.angularDamping = 0f;
         _rb.sleepMode = RigidbodySleepMode2D.NeverSleep;
@@ -55,6 +56,8 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     protected override void Start()
     {
+        base.Start();
+
         BossTable bossTable = TableManager.Instance.GetTable<BossTable>();
         BossSO bossData = bossTable.GetDataByID(0);
 

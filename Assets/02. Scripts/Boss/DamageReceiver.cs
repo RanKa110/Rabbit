@@ -64,17 +64,11 @@ public class DamageReceiver : IDamageable
         {
             Debug.Log("회피 조건 만족 → 회피 시행!");
 
-            if (_coroutineHost is BossController boss && boss.CurrentStateKey != BossState.Evade)
+            if (_coroutineHost is BossController boss)
             {
-                _coroutineHost.StartCoroutine(RequestEvadeCoroutine(boss));
+                boss.RequestEvade();
             }
         }
-    }
-
-    private IEnumerator RequestEvadeCoroutine(BossController boss)
-    {
-        yield return new WaitForSeconds(0.05f);
-        boss.ChangeState(BossState.Evade);
     }
 
     public void Dead()
