@@ -48,7 +48,8 @@ namespace BossStates
         public void OnUpdate(BossController owner)
         {
             Debug.Log("보스 추격 시행 중..");
-            owner.Movement();
+            owner.FaceToTarget();           //  방향을 먼저 전환
+            owner.Movement();               //  그 다음에 이동
         }
 
         public void OnExit(BossController entity)
@@ -103,6 +104,8 @@ namespace BossStates
         public void OnEnter(BossController owner)
         {
             Debug.Log("보스 공격 상태 진입!");
+
+            owner.FaceToTarget();
 
             _attackDone = false;
 

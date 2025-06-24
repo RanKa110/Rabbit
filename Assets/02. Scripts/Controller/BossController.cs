@@ -86,6 +86,30 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     public override void Movement() => _movementHandler.Chase();
 
+    //  플레이어를 어디서나 바라보도록 하는 메서드
+    public void FaceToTarget()
+    {
+        if (Target == null)
+        {
+            return;
+        }
+
+        Vector2 scale = transform.localScale;
+        float dirX = Target.Collider.bounds.center.x - transform.position.x;
+
+        if (dirX > 0f)
+        {
+            scale.x = Mathf.Abs(scale.x);       //  오른쪽을 바라봄
+        }
+
+        else if (dirX < 0f)
+        {
+            scale.x = -Mathf.Abs(scale.x);      //  왼쪽 바라봄
+        }
+
+        transform.localScale = scale;
+    }
+
     public void Attack() => StartCoroutine(_attackHandler.BasicAttackCoroutine(_gauge));
 
     public override void FindTarget()
