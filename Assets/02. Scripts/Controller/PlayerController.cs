@@ -18,7 +18,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private SpriteRenderer _spriteRenderer;
     
     private Vector2 _moveInput;
-    private bool _isRunning;
     private bool _isCrouch;
     private bool _attackTriggered;
     private bool _jumpTriggered;
@@ -29,7 +28,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public bool _isDead;
     
     public Vector2 MoveInput => _moveInput;
-    public bool IsRunning => _isRunning;
     public bool IsCrouch => _isCrouch;
     public bool IsGrounded => _boxCollider2D.IsTouchingLayers(LayerMask.GetMask("Ground"));
     
@@ -82,16 +80,12 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         action.Move.performed += context => _moveInput = context.ReadValue<Vector2>();
         action.Move.canceled += _ => _moveInput = Vector2.zero;
 
-        action.Run.performed += _ => _isRunning = true;
-        action.Run.canceled += _ => _isRunning = false;
-
         action.Crouch.performed += _ => _isCrouch = true;
         action.Crouch.canceled += _ => _isCrouch = false; 
         
         action.Jump.started += _ => _jumpTriggered = true;
 
-        action.Attack.performed += _ => _attackTriggered = true;
-        action.Attack.canceled += _ => _attackTriggered = false;
+        action.Attack.started += _ => _attackTriggered = true;
     }
 
     protected override void Update()
@@ -123,7 +117,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         {
             PlayerState.Idle => new IdleState(),
             PlayerState.Move => new MoveState(),
-            PlayerState.Run => new RunState(),
 
             PlayerState.Jump => new JumpState(),
             PlayerState.Fall => new FallState(),
@@ -136,8 +129,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public override void Movement()
     {
-        float speed = StatManager.GetValue(StatType.MoveSpeed) *
-                      (_isRunning ? StatManager.GetValue(StatType.RunMultiplier) : 1f);
+        float speed = StatManager.GetValue(StatType.MoveSpeed);
         _rigidbody2D.linearVelocity =
             new Vector2(MoveInput.x * speed, _rigidbody2D.linearVelocityY);
     }
