@@ -25,14 +25,19 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     private List<IDamageable> _targets = new List<IDamageable>();
 
-    public bool _isDead;
+    private bool _isDead;
     
     public Vector2 MoveInput => _moveInput;
     public bool IsCrouch => _isCrouch;
     public bool IsGrounded => _boxCollider2D.IsTouchingLayers(LayerMask.GetMask("Ground"));
     
     public float VelocityY => _rigidbody2D.linearVelocity.y;
-    public bool JumpTriggered => _jumpTriggered;
+
+    public bool JumpTriggered
+    {
+        get => _jumpTriggered;
+        set => _jumpTriggered = value;
+    }
 
     public bool CanDoubleJump
     {
@@ -91,19 +96,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     protected override void Update()
     {
         base.Update();
-        
         Rotate();
         Fall();
-        if (JumpTriggered)
-        {
-            Jump();
-            _jumpTriggered = false;
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        Movement();
     }
 
     /// <summary>
@@ -146,26 +140,26 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     {
         if (VelocityY < 0)
         {
-            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 2f * Time.deltaTime;
+            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 2.3f * Time.deltaTime;
         }
         else
         {
-            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 0.5f * Time.deltaTime;
+            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 0.43f * Time.deltaTime;
         }
     }
 
     public void Jump()
     {
+        _jumpTriggered = false;
         if (IsGrounded)
         {
             _rigidbody2D.AddForceY(StatManager.GetValue(StatType.JumpForce), ForceMode2D.Impulse);
-            CanDoubleJump = true;
         } 
-        else if (CanDoubleJump)
+        else if (_doubleJumpAvailable)
         {
             _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocityX, 0);
             _rigidbody2D.AddForceY(StatManager.GetValue(StatType.JumpForce), ForceMode2D.Impulse);
-            CanDoubleJump = false;
+            _doubleJumpAvailable = false;
         }
     }
 

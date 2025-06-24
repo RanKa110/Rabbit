@@ -4,47 +4,62 @@ namespace PlayerGroundStates
 {
     public class IdleState : PlayerGroundState
     {
-        public void OnEnter(PlayerController owner)
+        public override void OnEnter(PlayerController owner)
         {
+            owner.GetComponent<Rigidbody2D>().linearVelocityX = 0f;
         }
 
         public override void OnUpdate(PlayerController owner)
         {
         }
 
-        public void OnExit(PlayerController owner)
+        public override void OnExit(PlayerController owner)
         {
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.JumpTriggered)
+                return PlayerState.Jump;
+            
+            if (owner.MoveInput.sqrMagnitude > 0.01f)
+                return PlayerState.Move;
+
+            
             return PlayerState.Idle;
         }
     }
 
     public class MoveState : PlayerGroundState
     {
-        public void OnEnter(PlayerController owner)
+        public override void OnEnter(PlayerController owner)
         {
         }
 
         public override void OnUpdate(PlayerController owner)
         {
+            owner.Movement();
         }
 
-        public void OnExit(PlayerController owner)
+        public override void OnExit(PlayerController owner)
         {
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.JumpTriggered)
+                return PlayerState.Jump;
+
+            if (owner.MoveInput.sqrMagnitude < 0.01f)
+                return PlayerState.Idle;
+            
             return PlayerState.Move;
         }
     }
     
     public class CrouchState : PlayerGroundState
     {
-        public void OnEnter(PlayerController owner)
+        public override void OnEnter(PlayerController owner)
         {
         }
 
@@ -52,33 +67,13 @@ namespace PlayerGroundStates
         {
         }
 
-        public void OnExit(PlayerController owner)
+        public override void OnExit(PlayerController owner)
         {
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
             return PlayerState.Crouch;
-        }
-    }
-    
-    public class RunState : PlayerGroundState
-    {
-        public void OnEnter(PlayerController owner)
-        {
-        }
-
-        public override void OnUpdate(PlayerController owner)
-        {
-        }
-
-        public void OnExit(PlayerController owner)
-        {
-        }
-
-        public override PlayerState CheckTransition(PlayerController owner)
-        {
-            return PlayerState.Run;
         }
     }
 }
