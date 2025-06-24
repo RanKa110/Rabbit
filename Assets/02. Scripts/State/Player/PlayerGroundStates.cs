@@ -19,6 +19,9 @@ namespace PlayerGroundStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.VelocityY < 0)
+                return PlayerState.Fall;
+            
             if (owner.JumpTriggered)
                 return PlayerState.Jump;
             
@@ -34,6 +37,7 @@ namespace PlayerGroundStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            owner.CanDoubleJump = true;
         }
 
         public override void OnUpdate(PlayerController owner)
@@ -47,6 +51,9 @@ namespace PlayerGroundStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.VelocityY < 0)
+                return PlayerState.Fall;
+            
             if (owner.JumpTriggered)
                 return PlayerState.Jump;
 
