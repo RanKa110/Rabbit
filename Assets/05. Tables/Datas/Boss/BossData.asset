@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ID: 0
   Type: 3
-  detectionRange: 100
+  detectionRange: 10
   projectilePrefab: {fileID: 0}
   parryChance: 0.5
   attackCooldown: 1
