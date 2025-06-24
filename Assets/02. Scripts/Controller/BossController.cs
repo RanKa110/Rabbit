@@ -10,10 +10,19 @@ using BossStates;
 
 public class BossController : BaseController<BossController, BossState>, IAttackable, IDamageable
 {
+    [Header("Boss 데이터")]
     [SerializeField] public BossSO Data;
+
     private Rigidbody2D _rb;
     private IDamageable _target;
     private bool _isDead;
+
+    [Header("기본 공격 게이지")]
+    [Tooltip("게이지가 이 값에 도달하면 패턴 발동")]
+    [SerializeField] private float maxBasicGauge = 100f;
+    [Tooltip("기본 공격 1회당 채워지는 게이지 양")]
+    [SerializeField] private float gaugePerBasicAttack = 35f;
+    private float _basicGauge = 0f;
 
     public bool IsDead => _isDead;
     public Collider2D Collider { get; private set; }
@@ -24,6 +33,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     public float AttackCooldownValue => Data.attackCooldown;
     public int PatternCount => Data.PatternDelays.Length;
     public float GetPatternDelay(int idx) => Data.PatternDelays[idx];
+   
 
     protected override void Awake()
     {
@@ -45,8 +55,8 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     protected override void Update()
     {
-        base.Update();
         FindTarget();           //  타겟 먼저 찾기
+        base.Update();
     }
 
     protected override IState<BossController, BossState> GetState(BossState state) => state switch
@@ -93,10 +103,18 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         _target.TakeDamage(this);
     }
 
-    public void Attack()
+    public void Attack() => BasicAttack();
+
+    //   게이지 관련 메서드
+    public void AddBasicGauge()
     {
-        BasicAttack();
+        _basicGauge = Mathf.Min(_basicGauge + gaugePerBasicAttack, maxBasicGauge);
+        Debug.Log($"보스 패턴 공격 게이지: {_basicGauge} / {maxBasicGauge}");
     }
+
+    public bool IsBasicGaugeFull() => _basicGauge >= maxBasicGauge;
+
+    public void ResetBasicGauge() => _basicGauge = 0f;
 
     public override void FindTarget()
     {

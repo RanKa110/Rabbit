@@ -8,23 +8,23 @@ namespace BossStates
     {
         public void OnEnter(BossController owner)
         {
-            Debug.Log("IdleState.OnEnter");
+            //Debug.Log("IdleState.OnEnter");
         }
 
         public void OnUpdate(BossController owner)
         {
-            Debug.Log("IdleState.OnUpdate");
+            //Debug.Log("IdleState.OnUpdate");
         }
 
         public void OnExit(BossController entity)
         {
-            Debug.Log("IdleState.OnExit");
+            //Debug.Log("IdleState.OnExit");
         }
 
 
         public BossState CheckTransition(BossController owner)
         {
-            Debug.Log("▶ IdleState.CheckTransition");
+            //Debug.Log("▶ IdleState.CheckTransition");
 
             if (owner.Target != null)
             {
@@ -69,7 +69,7 @@ namespace BossStates
 
             float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
 
-            Debug.Log($"[Chasing.CheckTransition] dist = {distance}, atkRange = {owner.StatManager.GetValue(StatType.AttackRange)}");
+            //Debug.Log($"[Chasing.CheckTransition] dist = {distance}, atkRange = {owner.StatManager.GetValue(StatType.AttackRange)}");
 
             if (distance <= owner.StatManager.GetValue(StatType.AttackRange))
             {
@@ -84,35 +84,32 @@ namespace BossStates
     //  공격 속도, 사거리, 쿨타임 반영
     public class AttackState : IState<BossController, BossState>
     {
-        private readonly float _atkSpd;
-        private readonly float _atkRange;
         private bool _attackDone;
-
-        //public AttackState()
-        //{
-        //    _atkSpd = atkSpd;
-        //    _atkRange = atkRange;
-        //}
 
         public void OnEnter(BossController owner)
         {
             Debug.Log("보스 공격 상태 진입!");
 
-            float atkSpd = owner.StatManager.GetValue(StatType.AttackSpd);
-            float atkRange = owner.StatManager.GetValue(StatType.AttackRange);
-
-            owner.StartCoroutine(DoAttack(owner));
-        }
-
-        private IEnumerator DoAttack(BossController owner)
-        {
             _attackDone = false;
 
-            yield return new WaitForSeconds(1f / _atkSpd);
+            float atkSpd = owner.StatManager.GetValue(StatType.AttackSpd);
 
+            owner.StartCoroutine(DoAttack(owner, atkSpd));
+        }
+
+        private IEnumerator DoAttack(BossController owner, float atkSpd)
+        {
+            //  공격 준비
+            yield return new WaitForSeconds(1f / atkSpd);
+
+            //  기본 공격
             owner.BasicAttack();
+            owner.AddBasicGauge();
 
+            //  쿨타임
             yield return new WaitForSeconds(owner.AttackCooldownValue);
+
+            Debug.Log($"{owner.AttackCooldownValue}");
 
             _attackDone = true;
         }
@@ -121,13 +118,13 @@ namespace BossStates
         {
         }
 
-        public void OnExit(BossController entity)
+        public void OnExit(BossController owner)
         {
         }
 
         public BossState CheckTransition(BossController owner)
         {
-            if (owner.IsDead)
+            if (owner.IsDead) 
             {
                 return BossState.Die;
             }
@@ -137,10 +134,19 @@ namespace BossStates
                 return BossState.Attack;
             }
 
-            //  쿨타임 끝나면 랜덤 패턴 혹은 다시 추격
-            int idx = Random.Range(0, owner.PatternCount);
+            //  게이지가 다 차면 패턴으로, 아닐 경우 다시 추격
+            if (owner.IsBasicGaugeFull())
+            {
+                owner.ResetBasicGauge();
+                int idx = Random.Range(0, owner.PatternCount);
+                Debug.Log($"게이지 풀차징! Pattern{idx + 1} 발동!");
+                return (BossState)((int)BossState.Pattern1 + idx);
+            }
 
-            return (BossState)((int)BossState.Pattern1 + idx);
+            else
+            {
+                return BossState.Chasing;
+            }
         }
     }
 
@@ -150,10 +156,7 @@ namespace BossStates
         private readonly int _index;
         private float _timer;
 
-        public PatternState(int index)
-        {
-            _index = index;
-        }
+        public PatternState(int index) => _index = index;
 
         public void OnEnter(BossController owner)
         {
