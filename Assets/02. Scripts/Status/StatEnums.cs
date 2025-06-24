@@ -19,7 +19,7 @@ public enum StatType
     
     Defense,
     JumpForce,
-    
+    DashForce,
 }
 
 public enum StatModifierType

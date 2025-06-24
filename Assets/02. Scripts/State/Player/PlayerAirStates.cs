@@ -6,7 +6,6 @@ namespace PlayerAirStates
     {
         public override void OnEnter(PlayerController owner)
         {
-            Debug.Log("Jump");
             owner.Jump();
             owner.CanDoubleJump = true;
         }
@@ -24,6 +23,9 @@ namespace PlayerAirStates
         {
             if (owner.JumpTriggered && owner.CanDoubleJump)
                 return PlayerState.DoubleJump;
+            
+            if (owner.DashTriggered && owner.CanDash)
+                return PlayerState.Dash;
             
             if (owner.VelocityY < 0)
                 return PlayerState.Fall;
@@ -51,6 +53,9 @@ namespace PlayerAirStates
         {
             if (owner.JumpTriggered && owner.CanDoubleJump)
                 return PlayerState.DoubleJump;
+            
+            if (owner.DashTriggered && owner.CanDash)
+                return PlayerState.Dash;
             
             if (owner.IsGrounded)
                 return PlayerState.Idle;
@@ -80,6 +85,9 @@ namespace PlayerAirStates
         {
             if (owner.VelocityY < 0)
                 return PlayerState.Fall;
+            
+            if (owner.DashTriggered && owner.CanDash)
+                return PlayerState.Dash;
             
             if (owner.IsGrounded)
                 return PlayerState.Idle;
