@@ -16,7 +16,7 @@ MonoBehaviour:
   Type: 3
   detectionRange: 100
   projectilePrefab: {fileID: 0}
-  parryChance: 0.1
+  parryChance: 0.5
   attackCooldown: 1
   PatternDelays:
   - 2

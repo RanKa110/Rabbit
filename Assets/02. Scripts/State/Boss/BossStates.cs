@@ -104,7 +104,7 @@ namespace BossStates
 
             //  기본 공격
             owner.BasicAttack();
-            owner.AddBasicGauge();
+            owner.AddBasicGauge();          //  기본 공격 시, 해당 게이지 차징
 
             //  쿨타임
             yield return new WaitForSeconds(owner.AttackCooldownValue);
@@ -124,29 +124,55 @@ namespace BossStates
 
         public BossState CheckTransition(BossController owner)
         {
-            if (owner.IsDead) 
+            if (owner.IsDead)
             {
                 return BossState.Die;
             }
 
+            //   아직 공격 코루틴이 끝나지 않았다면 계속 이 상태
             if (!_attackDone)
             {
                 return BossState.Attack;
             }
 
-            //  게이지가 다 차면 패턴으로, 아닐 경우 다시 추격
-            if (owner.IsBasicGaugeFull())
+            //  게이지가 차지 않았다면 쫓아가서 다시 공격
+            if (!owner.IsBasicGaugeFull())
             {
-                owner.ResetBasicGauge();
-                int idx = Random.Range(0, owner.PatternCount);
-                Debug.Log($"게이지 풀차징! Pattern{idx + 1} 발동!");
-                return (BossState)((int)BossState.Pattern1 + idx);
+                return BossState.Chasing;
+            }
+
+            //  게이지가 가득 찼다면 패턴 공격 시행
+            //  1. 게이지 초기화
+            owner.ResetBasicGauge();
+
+            //  2. 현재 체력 비율 계산
+            float curHp = owner.StatManager.GetValue(StatType.CurHp);
+            float maxHp = owner.StatManager.GetValue(StatType.MaxHp);
+            float hpPercent = curHp / maxHp;
+
+            //  3. HP 구간 별 패턴 풀 크기 결정
+            int maxPatternCount;
+
+            if (hpPercent >= 0.7f && hpPercent <= 100f)
+            {
+                maxPatternCount = 1;        //  패턴 1 시행
+            }
+
+            else if (hpPercent >= 0.45f)
+            {
+                maxPatternCount = 2;        //  패턴 1,2 시행
             }
 
             else
             {
-                return BossState.Chasing;
+                maxPatternCount = 3;        //  패턴 1,2,3 시행
             }
+
+            //  4. 풀에서 랜덤 선택
+            int idx = Random.Range(0, maxPatternCount);
+            Debug.Log($"HP {hpPercent * 100: F0}% → 패턴 {idx + 1} 진입");
+
+            return (BossState)((int)BossState.Pattern1 + idx);
         }
     }
 
