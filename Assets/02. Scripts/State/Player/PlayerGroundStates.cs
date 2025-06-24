@@ -6,7 +6,6 @@ namespace PlayerGroundStates
     {
         public override void OnEnter(PlayerController owner)
         {
-            owner.GetComponent<Rigidbody2D>().linearVelocityX = 0f;
         }
 
         public override void OnUpdate(PlayerController owner)
