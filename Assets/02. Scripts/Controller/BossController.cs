@@ -10,10 +10,19 @@ using BossStates;
 
 public class BossController : BaseController<BossController, BossState>, IAttackable, IDamageable
 {
+    [Header("Boss 데이터")]
     [SerializeField] public BossSO Data;
+
     private Rigidbody2D _rb;
     private IDamageable _target;
     private bool _isDead;
+
+    [Header("기본 공격 게이지")]
+    [Tooltip("게이지가 이 값에 도달하면 패턴 발동")]
+    [SerializeField] private float maxBasicGauge = 100f;
+    [Tooltip("기본 공격 1회당 채워지는 게이지 양")]
+    [SerializeField] private float gaugePerBasicAttack = 35f;
+    private float _basicGauge = 0f;
 
     public bool IsDead => _isDead;
     public Collider2D Collider { get; private set; }
@@ -24,6 +33,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     public float AttackCooldownValue => Data.attackCooldown;
     public int PatternCount => Data.PatternDelays.Length;
     public float GetPatternDelay(int idx) => Data.PatternDelays[idx];
+   
 
     protected override void Awake()
     {
@@ -33,6 +43,11 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
         _rb = GetComponent<Rigidbody2D>();
         Collider = GetComponent<Collider2D>();
+
+        //  Rigidbody2D 물리 세팅: 저항값 제거
+        _rb.linearDamping = 0f;
+        _rb.angularDamping = 0f;
+        _rb.sleepMode = RigidbodySleepMode2D.NeverSleep;
     }
 
     protected override void Start()
@@ -45,15 +60,15 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     protected override void Update()
     {
-        base.Update();
         FindTarget();           //  타겟 먼저 찾기
+        base.Update();
     }
 
     protected override IState<BossController, BossState> GetState(BossState state) => state switch
     {
         BossState.Idle => new IdleState(),
         BossState.Chasing => new ChasingState(),
-        BossState.Attack => new AttackState(1, 1), // 나중에 보스 기획 단계에서 수정하기
+        BossState.Attack => new AttackState(), // 나중에 보스 기획 단계에서 수정하기
         BossState.Pattern1 => new PatternState(0),
         BossState.Pattern2 => new PatternState(1),
         BossState.Pattern3 => new PatternState(2),
@@ -64,20 +79,19 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     //  2D 플랫폼 액션 이동
     public override void Movement()
     {
-        Debug.Log("보스 이동 시작!");
-
         if (_target == null)
         {
             return;
         }
 
         float speed = StatManager.GetValue(StatType.MoveSpeed);
+        Vector2 origin = _rb.position;
+        Vector2 goal = _target.Collider.bounds.center;
+        Vector2 dir = (goal - origin).normalized;
 
-        Vector2 origin = (Vector2)transform.position;
-        Vector2 targetPos = _target.Collider.transform.position;
-        Vector2 dir = (targetPos - origin).normalized;
+        Vector2 nextPos = origin + dir * speed * Time.fixedDeltaTime;
 
-        _rb.linearVelocity = new Vector2(dir.x * speed, _rb.linearVelocity.y);
+        _rb.MovePosition(nextPos);
     }
 
     //  보스 기본 공격
@@ -93,10 +107,18 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         _target.TakeDamage(this);
     }
 
-    public void Attack()
+    public void Attack() => BasicAttack();
+
+    //   게이지 관련 메서드
+    public void AddBasicGauge()
     {
-        BasicAttack();
+        _basicGauge = Mathf.Min(_basicGauge + gaugePerBasicAttack, maxBasicGauge);
+        Debug.Log($"보스 패턴 공격 게이지: {_basicGauge} / {maxBasicGauge}");
     }
+
+    public bool IsBasicGaugeFull() => _basicGauge >= maxBasicGauge;
+
+    public void ResetBasicGauge() => _basicGauge = 0f;
 
     public override void FindTarget()
     {
@@ -118,9 +140,23 @@ public class BossController : BaseController<BossController, BossState>, IAttack
             return;
         }
 
-        _isDead = true;
+        //  패링 체크
+        if (Random.value < Data.parryChance)
+        {
+            Debug.Log("보스 패링! 데미지 무시!");
+            return;
+        }
 
-        ChangeState(BossState.Die);
+        //  실제 데미지 적용
+        float damage = attacker.AttackStat.Value;
+        StatManager.Consume(StatType.CurHp, StatModifierType.Base, damage);
+        Debug.Log($"보스가 {damage} 피해 입음. 남은 HP: {StatManager.GetValue(StatType.CurHp)}");
+
+        if (StatManager.GetValue(StatType.CurHp) <= 0f)
+        {
+            _isDead = true;
+            ChangeState(BossState.Die);
+        }
     }
 
     public void Dead() 

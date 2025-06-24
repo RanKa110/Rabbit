@@ -8,23 +8,23 @@ namespace BossStates
     {
         public void OnEnter(BossController owner)
         {
-            Debug.Log("IdleState.OnEnter");
+            //Debug.Log("IdleState.OnEnter");
         }
 
         public void OnUpdate(BossController owner)
         {
-            Debug.Log("IdleState.OnUpdate");
+            //Debug.Log("IdleState.OnUpdate");
         }
 
         public void OnExit(BossController entity)
         {
-            Debug.Log("IdleState.OnExit");
+            //Debug.Log("IdleState.OnExit");
         }
 
 
         public BossState CheckTransition(BossController owner)
         {
-            Debug.Log("▶ IdleState.CheckTransition");
+            //Debug.Log("▶ IdleState.CheckTransition");
 
             if (owner.Target != null)
             {
@@ -49,8 +49,8 @@ namespace BossStates
 
         public void OnUpdate(BossController owner)
         {
-            Debug.Log("ChasingState.OnUpdate → Movement()");
             owner.Movement();
+            Debug.Log("ChasingState.OnUpdate → Movement()");
         }
 
         public void OnExit(BossController entity)
@@ -67,16 +67,22 @@ namespace BossStates
                 return BossState.Die;
             }
 
-            //if (owner.Target == null)
-            //{
-            //    return BossState.Idle;
-            //}
+            //  콜라이더 중심 좌표 구하기
+            Vector2 bossCenter = owner.Collider.bounds.center;
+            Vector2 playerCenter = owner.Target.Collider.bounds.center;
 
-            float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
+            //  두 중심 사이 거리 계산
+            float distance = Vector2.Distance(bossCenter, playerCenter);
 
-            Debug.Log($"[Chasing.CheckTransition] dist={distance}, atkRange={owner.StatManager.GetValue(StatType.AttackRange)}");
+            //  사거리 + 약간의 여유
+            float atkRange = owner.StatManager.GetValue(StatType.AttackRange);
+            const float epsilon = 0.1f;
+            float threshold = atkRange + epsilon;
 
-            if (distance <= owner.StatManager.GetValue(StatType.AttackRange))
+            Debug.Log($"distance = {distance}, attackRange = {atkRange + epsilon}");
+
+            //  비교
+            if (distance <= threshold)
             {
                 Debug.Log("→ Chasing → Attack");
                 return BossState.Attack;
@@ -86,33 +92,35 @@ namespace BossStates
         }
     }
 
+    //  공격 속도, 사거리, 쿨타임 반영
     public class AttackState : IState<BossController, BossState>
     {
-        private readonly float _atkSpd;
-        private readonly float _atkRange;
         private bool _attackDone;
-
-        public AttackState(float atkSpd, float atkRange)
-        {
-            _atkSpd = atkSpd;
-            _atkRange = atkRange;
-        }
 
         public void OnEnter(BossController owner)
         {
-            Debug.Log("AttackState.OnEnter");
-            owner.StartCoroutine(DoAttack(owner));
-        }
+            Debug.Log("보스 공격 상태 진입!");
 
-        private IEnumerator DoAttack(BossController owner)
-        {
             _attackDone = false;
 
-            yield return new WaitForSeconds(1f / _atkSpd);
+            float atkSpd = owner.StatManager.GetValue(StatType.AttackSpd);
 
+            owner.StartCoroutine(DoAttack(owner, atkSpd));
+        }
+
+        private IEnumerator DoAttack(BossController owner, float atkSpd)
+        {
+            //  공격 준비
+            yield return new WaitForSeconds(1f / atkSpd);
+
+            //  기본 공격
             owner.BasicAttack();
+            owner.AddBasicGauge();          //  기본 공격 시, 해당 게이지 차징
 
+            //  쿨타임
             yield return new WaitForSeconds(owner.AttackCooldownValue);
+
+            Debug.Log($"{owner.AttackCooldownValue}");
 
             _attackDone = true;
         }
@@ -121,7 +129,7 @@ namespace BossStates
         {
         }
 
-        public void OnExit(BossController entity)
+        public void OnExit(BossController owner)
         {
         }
 
@@ -132,30 +140,65 @@ namespace BossStates
                 return BossState.Die;
             }
 
+            //   아직 공격 코루틴이 끝나지 않았다면 계속 이 상태
             if (!_attackDone)
             {
                 return BossState.Attack;
             }
 
-            int idx = Random.Range(0, owner.Data.PatternDelays.Length);
+            //  게이지가 차지 않았다면 쫓아가서 다시 공격
+            if (!owner.IsBasicGaugeFull())
+            {
+                return BossState.Chasing;
+            }
+
+            //  게이지가 가득 찼다면 패턴 공격 시행
+            //  1. 게이지 초기화
+            owner.ResetBasicGauge();
+
+            //  2. 현재 체력 비율 계산
+            float curHp = owner.StatManager.GetValue(StatType.CurHp);
+            float maxHp = owner.StatManager.GetValue(StatType.MaxHp);
+            float hpPercent = curHp / maxHp;
+
+            //  3. HP 구간 별 패턴 풀 크기 결정
+            int maxPatternCount;
+
+            if (hpPercent >= 0.7f && hpPercent <= 100f)
+            {
+                maxPatternCount = 1;        //  패턴 1 시행
+            }
+
+            else if (hpPercent >= 0.45f)
+            {
+                maxPatternCount = 2;        //  패턴 1,2 시행
+            }
+
+            else
+            {
+                maxPatternCount = 3;        //  패턴 1,2,3 시행
+            }
+
+            //  4. 풀에서 랜덤 선택
+            int idx = Random.Range(0, maxPatternCount);
+            Debug.Log($"HP {hpPercent * 100: F0}% → 패턴 {idx + 1} 진입");
 
             return (BossState)((int)BossState.Pattern1 + idx);
         }
     }
 
+    //  delay 끝나면 다시 추격 시작
     public class PatternState : IState<BossController, BossState>
     {
         private readonly int _index;
         private float _timer;
 
-        public PatternState(int index)
-        {
-            _index = index;
-        }
+        public PatternState(int index) => _index = index;
 
         public void OnEnter(BossController owner)
         {
             _timer = 0f;
+            Debug.Log($"패턴 {_index + 1} 상태 진입!");
 
             //  TODO: 여기에 패턴 로직을 추가해야 합니다.
         }
@@ -167,6 +210,7 @@ namespace BossStates
 
         public void OnExit(BossController entity)
         {
+            Debug.Log($"패턴 {_index + 1} 상태 종료!");
         }
 
         public BossState CheckTransition(BossController owner)
