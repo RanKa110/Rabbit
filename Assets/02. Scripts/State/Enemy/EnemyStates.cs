@@ -87,7 +87,7 @@ namespace EnemyStates
 
             float distance = Vector3.Distance(owner.transform.position, owner.Target.Collider.transform.position);
 
-            if (distance <= owner.StatManager.GetValue(StatType.AttackRange))
+            if (distance <= owner.StatManager.GetValueSafe(StatType.AttackRange, 3.0f))
             {
                 return EnemyState.Attack;
             }

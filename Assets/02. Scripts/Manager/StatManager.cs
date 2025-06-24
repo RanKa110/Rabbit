@@ -50,6 +50,21 @@ public class StatManager : MonoBehaviour
         return Stats[type].GetCurrent();
     }
 
+    /// <summary>
+    /// 안전하게 스탯 값을 가져오는 메서드 (키가 없으면 기본값 반환)
+    /// </summary>
+    /// <param name="type">스탯 타입</param>
+    /// <param name="defaultValue">기본값</param>
+    /// <returns>스탯 값 또는 기본값</returns>
+    public float GetValueSafe(StatType type, float defaultValue = 0f)
+    {
+        if (Stats.TryGetValue(type, out var stat))
+        {
+            return stat.GetCurrent();
+        }
+        return defaultValue;
+    }
+
     public void Recover(StatType statType, StatModifierType modifierType, float value)
     {
         if (Stats[statType] is ResourceStat res)
