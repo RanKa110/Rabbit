@@ -33,9 +33,6 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     private Animator _animator;
     private SpriteRenderer _spriteRenderer;
     
-    // 몬스터 컴포넌트 참조
-    private MonsterBase _monsterBase;
-    
     // 상태 변수
     public bool IsAttacking { get; set; }
     public bool CanAttack { get; set; } = true;
@@ -52,13 +49,6 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         Collider = GetComponent<Collider2D>();
         StatManager.Initialize(Data, this);
         AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
-        
-        // 몬스터 타입별 컴포넌트 참조
-        _monsterBase = GetComponent<MonsterBase>();
-        if (_monsterBase == null)
-        {
-            Debug.LogWarning($"MonsterBase component not found on {gameObject.name}");
-        }
     }
 
     protected override void Start()

@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 7847617172563734660}
   - component: {fileID: 5802482773544262730}
   - component: {fileID: 6528571585439125507}
+  - component: {fileID: 17406046109936022}
   m_Layer: 6
   m_Name: MeleeEnemy
   m_TagString: Enemy
@@ -64,7 +65,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 5, y: 5, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1547191762901024466}
@@ -131,8 +132,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.5, y: 1}
+  m_Offset: {x: 0.079081714, y: -0.32142848}
+  m_Size: {x: 1.1479594, y: 1.7091838}
   m_Direction: 0
 --- !u!212 &1114406514762943070
 SpriteRenderer:
@@ -178,7 +179,7 @@ SpriteRenderer:
   m_SortingLayerID: 231875689
   m_SortingLayer: 1
   m_SortingOrder: 0
-  m_Sprite: {fileID: -6472200702542315607, guid: be1ebdaec2b24974ca818641ddf57145, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d772f900cc7a14e4fb3eb5f836d75522, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -199,7 +200,7 @@ Animator:
   m_GameObject: {fileID: 5393587147841571617}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: c2179000fb1c88943a7e3a48fee66b20, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -253,10 +254,30 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 8
-  projectilePrefab: {fileID: 0}
-  homingProjectilePrefab: {fileID: 0}
-  firePoint: {fileID: 0}
-  projectileSpeed: 10
   minAttackDistance: 3
-  monsterType: 0
   hitEffectPrefab: {fileID: 5046881502283555390, guid: c358351990a7d7c46a195f6be7092695, type: 3}
+--- !u!114 &17406046109936022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5393587147841571617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ed4ee506057e584c89cdc35a9c10ae2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 0
+  moveSpeed: 2
+  attackDamage: 10
+  attackCooldown: 1
+  detectionRange: 10
+  attackRange: 2
+  currentState: 0
+  attackPoint: {fileID: 1547191762901024466}
+  attackRadius: 1.5
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 8

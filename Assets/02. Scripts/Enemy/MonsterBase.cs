@@ -229,4 +229,84 @@ public abstract class MonsterBase : MonoBehaviour, IAttackable
             DealDamageToPlayer(collision.gameObject, attackDamage);
         }
     }
+    
+    // ===== Animation Event 함수들 =====
+    // 애니메이션에서 호출될 수 있는 기본 함수들
+    
+    // Idle 애니메이션 이벤트 - 가장 중요! 이 함수가 없어서 에러가 발생합니다
+    public void Idle()
+    {
+        // Idle 애니메이션에서 호출되는 함수
+        // virtual이 아닌 일반 public 함수로 선언
+        // 필요한 경우 여기에 로직 추가 가능
+    }
+    
+    // 공격 애니메이션에서 호출
+    public virtual void OnAttackHit()
+    {
+        Debug.Log($"{gameObject.name}: OnAttackHit called from animation");
+    }
+    
+    // 공격 시작 시 호출
+    public virtual void OnAttackStart()
+    {
+        Debug.Log($"{gameObject.name}: OnAttackStart called from animation");
+    }
+    
+    // 공격 종료 시 호출
+    public virtual void OnAttackEnd()
+    {
+        Debug.Log($"{gameObject.name}: OnAttackEnd called from animation");
+    }
+    
+    // 발걸음 소리 등
+    public virtual void OnFootstep()
+    {
+        Debug.Log($"{gameObject.name}: OnFootstep called from animation");
+    }
+    
+    // 사망 애니메이션 종료
+    public virtual void OnDeathAnimationEnd()
+    {
+        Debug.Log($"{gameObject.name}: OnDeathAnimationEnd called from animation");
+        Destroy(gameObject);
+    }
+    
+    // Move/Walk 애니메이션 이벤트
+    public void Move()
+    {
+        // Move 애니메이션에서 호출되는 함수
+    }
+    
+    // Run 애니메이션 이벤트
+    public void Run()
+    {
+        // Run 애니메이션에서 호출되는 함수
+    }
+    
+    // Attack 애니메이션 이벤트
+    public void OnAttackAnimation()
+    {
+        // Attack 애니메이션에서 호출되는 함수
+        // IAttackable의 Attack()과 구별하기 위해 이름 변경
+    }
+    
+    // 일반적인 애니메이션 이벤트
+    public void AnimationEvent()
+    {
+        // 범용 애니메이션 이벤트 함수
+    }
+    
+    public void AnimationEvent(string parameter)
+    {
+        // 파라미터를 받는 범용 애니메이션 이벤트
+        Debug.Log($"{gameObject.name}: AnimationEvent called with parameter: {parameter}");
+    }
+    
+    // 추가 애니메이션 이벤트들 (필요시 사용)
+    public void Step() { }  // 발걸음
+    public void Land() { }  // 착지
+    public void Jump() { }  // 점프
+    public void Hit() { }   // 피격
+    public void Death() { } // 사망
 }

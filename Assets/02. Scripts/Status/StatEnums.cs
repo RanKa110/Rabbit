@@ -18,6 +18,8 @@ public enum StatType
     RunMultiplier,
     
     Defense,
+    JumpForce,
+    DashForce,
 }
 
 public enum StatModifierType
