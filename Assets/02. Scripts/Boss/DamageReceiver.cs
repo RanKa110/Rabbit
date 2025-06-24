@@ -1,21 +1,27 @@
 using UnityEngine;
+using System.Collections;
+using Unity.Hierarchy;
 
 public class DamageReceiver : IDamageable
 {
     private readonly StatManager _statManager;
     private readonly float _parryChance;
-    private readonly System.Action onDeath;
+
+    private readonly IEnumerator _onDeathCoroutine;
+    private readonly MonoBehaviour _coroutineHost;
+
     private bool _isDead;
 
     public bool IsDead => _isDead;
     public Collider2D Collider { get; }
 
-    public DamageReceiver(StatManager statManager, Collider2D collider, float parryChance, System.Action onDeathCallback)
+    public DamageReceiver(StatManager statManager, Collider2D collider, float parryChance, IEnumerator onDeathCoroutine, MonoBehaviour coroutineHost)
     {
         _statManager = statManager;
         _parryChance = parryChance;
         Collider = collider;
-        onDeath = onDeathCallback;
+        _onDeathCoroutine = onDeathCoroutine;
+        _coroutineHost = coroutineHost;
     }
 
     public void TakeDamage(IAttackable attacker)
@@ -36,11 +42,39 @@ public class DamageReceiver : IDamageable
 
         Debug.Log($"데미지: {damage} | 남은 HP: {_statManager.GetValue(StatType.CurHp)}");
 
+        TryTriggerEvade();      //  회피 조건 처리 메서드
+
         if (_statManager.GetValue(StatType.CurHp) <= 0f)
         {
             _isDead = true;
-            onDeath?.Invoke();
+
+            if (_onDeathCoroutine != null && _coroutineHost != null)
+            {
+                _coroutineHost.StartCoroutine(_onDeathCoroutine);
+            }
         }
+    }
+
+    private void TryTriggerEvade()
+    {
+        float hpRatio = _statManager.GetValue(StatType.CurHp) / _statManager.GetValue(StatType.MaxHp);
+        float evadeChance = 0.25f;
+
+        if (hpRatio < 0.6f && Random.value < evadeChance)
+        {
+            Debug.Log("회피 조건 만족 → 회피 시행!");
+
+            if (_coroutineHost is BossController boss && boss.CurrentStateKey != BossState.Evade)
+            {
+                _coroutineHost.StartCoroutine(RequestEvadeCoroutine(boss));
+            }
+        }
+    }
+
+    private IEnumerator RequestEvadeCoroutine(BossController boss)
+    {
+        yield return new WaitForSeconds(0.05f);
+        boss.ChangeState(BossState.Evade);
     }
 
     public void Dead()

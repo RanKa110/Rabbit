@@ -245,6 +245,72 @@ namespace BossStates
         }
     }
 
+    public class EvadeState : IState<BossController, BossState>
+    {
+        private bool _evadeComplete;
+
+        public void OnEnter(BossController owner)
+        {
+            _evadeComplete = false;
+            owner.StartCoroutine(DoEvade(owner));
+        }
+
+        private IEnumerator DoEvade(BossController owner)
+        {
+            Debug.Log("보스 회피 시작");
+
+            //  순간적으로 뒤로 물러나기
+            Vector2 bossPos = owner.transform.position;
+            Vector2 dir = (owner.transform.position - owner.Target.Collider.bounds.center).normalized;
+
+            float evadeDistance = 3f;
+            float evadeSpeed = 20f;
+
+            float t = 0f;
+            float duration = 0.15f;
+            Vector2 start = bossPos;
+            Vector2 end = bossPos + dir * evadeDistance;
+
+            while (t < 1f)
+            {
+                t += Time.deltaTime / duration;
+
+                Vector2 newPos = Vector2.Lerp(start, end, t);
+
+                owner.transform.position = newPos;
+
+                yield return null;
+            }
+
+            Debug.Log("보스 회피 완료");
+            _evadeComplete = true;
+        }
+
+        public void OnUpdate(BossController owner)
+        {
+        }
+
+        public void OnExit(BossController owner)
+        {
+            Debug.Log("보스 회피 상태 종료");
+        }
+
+        public BossState CheckTransition(BossController owner)
+        {
+            if (owner.IsDead)
+            {
+                return BossState.Die;
+            }
+
+            if (_evadeComplete)
+            {
+                return BossState.Chasing;   //  회피 후 다시 추격 상태로!
+            }
+
+            return BossState.Evade;
+        }
+    }
+
     public class DieState : IState<BossController, BossState>
     {
         public void OnEnter(BossController owner)

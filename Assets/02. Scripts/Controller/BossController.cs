@@ -35,6 +35,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     public IDamageable Target => _target;
     public StatBase AttackStat { get; private set; }
     public float DetectionRange => Data.detectionRange;
+    public BossState CurrentStateKey => _currentStateKey;
 
     public float AttackCooldownValue => Data.attackCooldown;
     public int PatternCount => Data.PatternDelays.Length;
@@ -61,7 +62,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
 
         _gauge = new GaugeManager(maxBasicGauge, gaugePerBasicAttack);
-        _damageReceiver = new DamageReceiver(StatManager, _collider, Data.parryChance, OnBossDead);
+        _damageReceiver = new DamageReceiver(StatManager, _collider, Data.parryChance, OnBossDeathCoroutine(), this);
         _movementHandler = new BossMovementHandler(_rb, this);
         _attackHandler = new BossAttackHandler(_damageReceiver, this, this);
     }
@@ -80,6 +81,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         BossState.Pattern1 => new PatternState(0),
         BossState.Pattern2 => new PatternState(1),
         BossState.Pattern3 => new PatternState(2),
+        BossState.Evade => new EvadeState(),
         BossState.Die => new DieState(),
         _ => null
     };
@@ -132,9 +134,13 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         _damageReceiver.TakeDamage(attacker);
     }
 
-    public void OnBossDead()
+    private IEnumerator OnBossDeathCoroutine()
     {
-        _isDead = true;
+        Debug.Log("보스 사망 처리 시작!");
+
+        //  사망 애니메이션, 이펙트, 사운드 등 여기에 삽입할 것!
+        yield return new WaitForSeconds(0.5f);
+
         ChangeState(BossState.Die);
     }
 
@@ -144,5 +150,14 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     public void Dead()
     {
+    }
+
+    public void RequestEvade()
+    {
+        if (CurrentStateKey != BossState.Evade)
+        {
+            Debug.Log("RequestEvade() 호출 → 상태 전이");
+            ChangeState(BossState.Evade);
+        }
     }
 }
