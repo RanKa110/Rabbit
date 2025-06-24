@@ -67,14 +67,9 @@ namespace BossStates
                 return BossState.Die;
             }
 
-            //if (owner.Target == null)
-            //{
-            //    return BossState.Idle;
-            //}
-
             float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
 
-            Debug.Log($"[Chasing.CheckTransition] dist={distance}, atkRange={owner.StatManager.GetValue(StatType.AttackRange)}");
+            Debug.Log($"[Chasing.CheckTransition] dist = {distance}, atkRange = {owner.StatManager.GetValue(StatType.AttackRange)}");
 
             if (distance <= owner.StatManager.GetValue(StatType.AttackRange))
             {
@@ -86,21 +81,26 @@ namespace BossStates
         }
     }
 
+    //  공격 속도, 사거리, 쿨타임 반영
     public class AttackState : IState<BossController, BossState>
     {
         private readonly float _atkSpd;
         private readonly float _atkRange;
         private bool _attackDone;
 
-        public AttackState(float atkSpd, float atkRange)
-        {
-            _atkSpd = atkSpd;
-            _atkRange = atkRange;
-        }
+        //public AttackState()
+        //{
+        //    _atkSpd = atkSpd;
+        //    _atkRange = atkRange;
+        //}
 
         public void OnEnter(BossController owner)
         {
-            Debug.Log("AttackState.OnEnter");
+            Debug.Log("보스 공격 상태 진입!");
+
+            float atkSpd = owner.StatManager.GetValue(StatType.AttackSpd);
+            float atkRange = owner.StatManager.GetValue(StatType.AttackRange);
+
             owner.StartCoroutine(DoAttack(owner));
         }
 
@@ -137,12 +137,14 @@ namespace BossStates
                 return BossState.Attack;
             }
 
-            int idx = Random.Range(0, owner.Data.PatternDelays.Length);
+            //  쿨타임 끝나면 랜덤 패턴 혹은 다시 추격
+            int idx = Random.Range(0, owner.PatternCount);
 
             return (BossState)((int)BossState.Pattern1 + idx);
         }
     }
 
+    //  delay 끝나면 다시 추격 시작
     public class PatternState : IState<BossController, BossState>
     {
         private readonly int _index;
@@ -156,6 +158,7 @@ namespace BossStates
         public void OnEnter(BossController owner)
         {
             _timer = 0f;
+            Debug.Log($"패턴 {_index + 1} 상태 진입!");
 
             //  TODO: 여기에 패턴 로직을 추가해야 합니다.
         }
@@ -167,6 +170,7 @@ namespace BossStates
 
         public void OnExit(BossController entity)
         {
+            Debug.Log($"패턴 {_index + 1} 상태 종료!");
         }
 
         public BossState CheckTransition(BossController owner)

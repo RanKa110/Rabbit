@@ -53,7 +53,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     {
         BossState.Idle => new IdleState(),
         BossState.Chasing => new ChasingState(),
-        BossState.Attack => new AttackState(1, 1), // 나중에 보스 기획 단계에서 수정하기
+        BossState.Attack => new AttackState(), // 나중에 보스 기획 단계에서 수정하기
         BossState.Pattern1 => new PatternState(0),
         BossState.Pattern2 => new PatternState(1),
         BossState.Pattern3 => new PatternState(2),
@@ -118,9 +118,23 @@ public class BossController : BaseController<BossController, BossState>, IAttack
             return;
         }
 
-        _isDead = true;
+        //  패링 체크
+        if (Random.value < Data.parryChance)
+        {
+            Debug.Log("보스 패링! 데미지 무시!");
+            return;
+        }
 
-        ChangeState(BossState.Die);
+        //  실제 데미지 적용
+        float damage = attacker.AttackStat.Value;
+        StatManager.Consume(StatType.CurHp, StatModifierType.Base, damage);
+        Debug.Log($"보스가 {damage} 피해 입음. 남은 HP: {StatManager.GetValue(StatType.CurHp)}");
+
+        if (StatManager.GetValue(StatType.CurHp) <= 0f)
+        {
+            _isDead = true;
+            ChangeState(BossState.Die);
+        }
     }
 
     public void Dead() 
