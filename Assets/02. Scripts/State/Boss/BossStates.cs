@@ -67,11 +67,21 @@ namespace BossStates
                 return BossState.Die;
             }
 
-            float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
+            //  콜라이더 중심 좌표 구하기
+            Vector2 bossCenter = owner.Collider.bounds.center;
+            Vector2 playerCenter = owner.Target.Collider.bounds.center;
 
-            //Debug.Log($"[Chasing.CheckTransition] dist = {distance}, atkRange = {owner.StatManager.GetValue(StatType.AttackRange)}");
+            //  두 중심 사이 거리 계산
+            float distance = Vector2.Distance(bossCenter, playerCenter);
 
-            if (distance <= owner.StatManager.GetValue(StatType.AttackRange))
+            //  사거리 + 약간의 여유
+            float atkRange = owner.StatManager.GetValue(StatType.AttackRange);
+            float epsilon = 0.1f;
+
+            //Debug.Log($"distance = {distance}, attackRange = {atkRange + epsilon}");
+
+            //  비교
+            if (distance <= atkRange /*+ epsilon*/)
             {
                 Debug.Log("→ Chasing → Attack");
                 return BossState.Attack;
