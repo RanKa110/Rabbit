@@ -38,6 +38,9 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     public bool CanAttack { get; set; } = true;
     public float LastAttackTime { get; set; }
 
+    public static event Action<EnemyController> OnAnyEnemyDie;
+
+    
     protected override void Awake()
     {
         base.Awake();
@@ -194,6 +197,8 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         {
             _animator.SetTrigger("Death");
         }
+
+        OnAnyEnemyDie?.Invoke(this);
     }
 
     public void TakeDamage(IAttackable attacker)
