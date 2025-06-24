@@ -79,15 +79,15 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         EnemyState.Idle => new EnemyStates.IdleState(),
         EnemyState.Chasing => new EnemyStates.ChasingState(),
         EnemyState.Attack => new EnemyStates.AttackState(
-            StatManager.GetValue(StatType.AttackSpd),
-            StatManager.GetValue(StatType.AttackRange)),
+            StatManager.GetValueSafe(StatType.AttackSpd, 1.0f), // 기본 공격 속도 1.0
+            StatManager.GetValueSafe(StatType.AttackRange, 3.0f)), // 기본 공격 범위 3.0
         EnemyState.Die => new EnemyStates.DieState(),
         _ => null
     };
 
     public override void Movement()
     {
-        base.Movement();
+        base.Movement();    
 
         if (_target == null)
         {
@@ -123,7 +123,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
             dir = (transform.position - _target.Collider.transform.position).normalized;
         }
         // 적정 거리보다 멀면 접근
-        else if (distanceToTarget > StatManager.GetValue(StatType.AttackRange) * 0.8f)
+        else if (distanceToTarget > StatManager.GetValueSafe(StatType.AttackRange, 3.0f) * 0.8f)
         {
             dir = (_target.Collider.transform.position - transform.position).normalized;
         }
