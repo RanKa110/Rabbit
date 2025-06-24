@@ -31,7 +31,10 @@ MonoBehaviour:
     Value: 100
   - StatType: 7
     ModifierType: 0
-    Value: 3
+    Value: 5
   - StatType: 8
     ModifierType: 0
     Value: 1.5
+  - StatType: 10
+    ModifierType: 0
+    Value: 7

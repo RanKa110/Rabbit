@@ -371,6 +371,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Square
       objectReference: {fileID: 0}
+    - target: {fileID: 2626240890162097795, guid: 69327008653e892448f1572503880cdc, type: 3}
+      propertyPath: m_Layer
+      value: 7
+      objectReference: {fileID: 0}
     - target: {fileID: 8993097457399385772, guid: 69327008653e892448f1572503880cdc, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.21
