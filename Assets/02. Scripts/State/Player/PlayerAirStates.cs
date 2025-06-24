@@ -6,13 +6,13 @@ namespace PlayerAirStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            Debug.Log("Jump");
             owner.Jump();
             owner.CanDoubleJump = true;
         }
 
         public override void OnUpdate(PlayerController owner)
         {
-            owner.Movement();
         }
 
         public override void OnExit(PlayerController owner)
@@ -40,7 +40,6 @@ namespace PlayerAirStates
 
         public override void OnUpdate(PlayerController owner)
         {
-            owner.Movement();
         }
 
         public override void OnExit(PlayerController owner)
@@ -70,7 +69,6 @@ namespace PlayerAirStates
 
         public override void OnUpdate(PlayerController owner)
         {
-            owner.Movement();
         }
 
         public override void OnExit(PlayerController owner)

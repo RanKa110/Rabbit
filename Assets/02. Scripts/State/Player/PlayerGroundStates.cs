@@ -18,15 +18,14 @@ namespace PlayerGroundStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
-            if (owner.VelocityY < 0)
-                return PlayerState.Fall;
-            
             if (owner.JumpTriggered)
                 return PlayerState.Jump;
             
+            if (owner.VelocityY < 0)
+                return PlayerState.Fall;
+            
             if (owner.MoveInput.sqrMagnitude > 0.01f)
                 return PlayerState.Move;
-
             
             return PlayerState.Idle;
         }
@@ -41,7 +40,6 @@ namespace PlayerGroundStates
 
         public override void OnUpdate(PlayerController owner)
         {
-            owner.Movement();
         }
 
         public override void OnExit(PlayerController owner)

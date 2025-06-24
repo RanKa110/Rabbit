@@ -12,6 +12,10 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(InputController))]
 public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable, IDamageable
 {
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private float groundCheckRadius = 0.1f;
+    [SerializeField] private LayerMask groundLayer;
+    
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
     private InputController _inputController;
@@ -29,7 +33,12 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     
     public Vector2 MoveInput => _moveInput;
     public bool IsCrouch => _isCrouch;
-    public bool IsGrounded => _boxCollider2D.IsTouchingLayers(LayerMask.GetMask("Ground"));
+    public bool IsGrounded =>
+        Physics2D.OverlapCircle(
+            groundCheck.position,
+            groundCheckRadius,
+            groundLayer
+        ) != null;
     
     public float VelocityY => _rigidbody2D.linearVelocity.y;
 
@@ -97,7 +106,13 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     {
         base.Update();
         Rotate();
-        Fall();
+    }
+    
+    private void FixedUpdate()
+    {
+        Movement();
+        if (!IsGrounded)
+            Fall();
     }
 
     /// <summary>
@@ -140,11 +155,11 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     {
         if (VelocityY < 0)
         {
-            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 2.3f * Time.deltaTime;
+            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 2.3f * Time.fixedDeltaTime;
         }
         else
         {
-            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 0.43f * Time.deltaTime;
+            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 0.43f * Time.fixedDeltaTime;
         }
     }
 
