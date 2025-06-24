@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e936a2e6-9fb8-4a9a-acdd-3eef07758e33" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Assets/05. Tables/Scripts/BossSO.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/05. Tables/Scripts/BossSO.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/05. Tables/Tables/Boss/BossTable.asset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/05. Tables/Tables/Boss/BossTable.asset.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/05. Tables/Tables/Boss/BossTable.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/05. Tables/Tables/Boss/BossTable.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Rabbit/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Rabbit/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,9 +15,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 6
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
   <component name="ProjectId" id="2yu8JHKVNFeS35vaV2ScsqBEbcT" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -32,7 +28,7 @@
     "Attach to Unity Editor.Attach to Unity Editor.executor": "Debug",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Develop",
+    "git-widget-placeholder": "local/Player",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -75,10 +71,10 @@
       </option>
       <method v="2" />
     </configuration>
-    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost" ignored-value-for-modified-check="2528">
+    <configuration name="Attach to Unity Editor" type="UNITY_DEBUG_RUN_CONFIGURATION" factoryName="Unity Debug" show_console_on_std_err="false" show_console_on_std_out="false" port="50000" address="localhost">
       <option name="allowRunningInParallel" value="false" />
       <option name="listenPortForConnections" value="false" />
-      <option name="pid" value="2528" />
+      <option name="pid" />
       <option name="projectPathOnTarget" />
       <option name="selectedOptions">
         <list />
