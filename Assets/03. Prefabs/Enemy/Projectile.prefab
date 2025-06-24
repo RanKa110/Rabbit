@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8843600682255261938}
   - component: {fileID: 5904041023403888143}
   - component: {fileID: 1151620702072667216}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Projectile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -61,7 +61,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 0
+  m_Constraints: 4
 --- !u!58 &8843600682255261938
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -167,4 +167,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lifeTime: 5
   destroyOnHit: 1
-  hitEffectPrefab: {fileID: 0}
+  hitEffectPrefab: {fileID: 5046881502283555390, guid: c358351990a7d7c46a195f6be7092695, type: 3}

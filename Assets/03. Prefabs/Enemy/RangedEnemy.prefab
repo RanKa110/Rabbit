@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2496363716472683557}
   - component: {fileID: 8220151101038229854}
   - component: {fileID: 5559524054733295161}
+  - component: {fileID: 8906417919447400123}
   m_Layer: 6
   m_Name: RangedEnemy
   m_TagString: Enemy
@@ -100,8 +101,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
-  m_Size: {x: 0.5, y: 1}
+  m_Offset: {x: 0.010204083, y: 0.0051020323}
+  m_Size: {x: 0.12244903, y: 0.12244903}
   m_Direction: 0
 --- !u!212 &913341830487083745
 SpriteRenderer:
@@ -168,7 +169,7 @@ Animator:
   m_GameObject: {fileID: 7794625406749572199}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 324a6431fddf6f848ac026cc1d2003da, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -222,13 +223,32 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 8
+  minAttackDistance: 3
+  hitEffectPrefab: {fileID: 0}
+--- !u!114 &8906417919447400123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7794625406749572199}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f4542d1f2ea92c46ba296a7c506e461, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 0
+  moveSpeed: 2
+  attackDamage: 10
+  attackCooldown: 1
+  detectionRange: 10
+  attackRange: 2
+  currentState: 0
   projectilePrefab: {fileID: 7016860977793892785, guid: de3e609a32d496a41b30608ac37c6239, type: 3}
-  homingProjectilePrefab: {fileID: 0}
   firePoint: {fileID: 1878207351087792415}
   projectileSpeed: 10
   minAttackDistance: 3
-  monsterType: 1
-  hitEffectPrefab: {fileID: 5046881502283555390, guid: c358351990a7d7c46a195f6be7092695, type: 3}
 --- !u!1 &9142182562488957334
 GameObject:
   m_ObjectHideFlags: 0

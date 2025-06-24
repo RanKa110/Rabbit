@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Type: 2
   DetectionRange: 20
+  RangedProjectilePrefab: {fileID: 0}
+  HomingProjectilePrefab: {fileID: 7804515417108403332, guid: b97e6088875bc574d9427c0e73507d6b, type: 3}
   ProjectilePrefab: {fileID: 7804515417108403332, guid: b97e6088875bc574d9427c0e73507d6b, type: 3}
   EnemyStats:
   - StatType: 6

@@ -175,8 +175,8 @@ namespace EnemyStates
             }
             else if (rangedMonster != null)
             {
-                // 원거리 공격: RangedMonster에게 위임
-                rangedMonster.currentState = MonsterBase.MonsterState.Attack;
+                // 원거리 공격: RangedMonster에게 위임 - 직접 공격 메서드 호출
+                rangedMonster.PerformRangedAttack();
             }
             else if (homingMonster != null)
             {

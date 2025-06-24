@@ -24,7 +24,38 @@ public class HomingMonster : MonsterBase
         enemyController = GetComponent<EnemyController>();
         if (enemyController == null)
         {
-            Debug.LogError("EnemyController component not found on HomingMonster!");
+            Debug.LogError("HomingMonster: EnemyController component not found!");
+        }
+        else if (enemyController.Data != null)
+        {
+            // SO에서 프리팹 가져오기 - 새로운 메서드 사용
+            GameObject prefabFromSO = enemyController.Data.GetProjectilePrefab();
+            if (prefabFromSO != null)
+            {
+                homingProjectilePrefab = prefabFromSO;
+                Debug.Log($"HomingMonster: Projectile prefab loaded from SO: {homingProjectilePrefab.name}");
+            }
+            else
+            {
+                Debug.LogWarning("HomingMonster: No projectile prefab found in EnemySO! Make sure HomingProjectilePrefab is set.");
+            }
+        }
+        
+        // firePoint가 없으면 자동으로 찾기
+        if (firePoint == null)
+        {
+            // 먼저 자식에서 FirePoint 찾기
+            firePoint = transform.Find("FirePoint");
+            
+            // 없으면 자동 생성
+            if (firePoint == null)
+            {
+                GameObject firePointObj = new GameObject("FirePoint");
+                firePointObj.transform.SetParent(transform);
+                firePointObj.transform.localPosition = new Vector3(0.5f, 0, 0); // 캐릭터 앞쪽
+                firePoint = firePointObj.transform;
+                Debug.LogWarning("HomingMonster: FirePoint was created automatically. Please adjust position in prefab.");
+            }
         }
     }
     
@@ -76,26 +107,14 @@ public class HomingMonster : MonsterBase
     // 공용 메서드로 변경하여 EnemyController에서 호출 가능하도록 함
     public void PerformHomingAttack()
     {
-        if (canAttack && !isAttacking)
-        {
-            StartCoroutine(HomingAttack());
-        }
+        // 조건 체크 없이 바로 공격 실행
+        FireHomingProjectile();
     }
     
-    private IEnumerator HomingAttack()
+    private void FireHomingProjectile()
     {
-        isAttacking = true;
-        canAttack = false;
-        lastAttackTime = Time.time;
-        
-        // 공격 애니메이션 트리거
-        if (animator != null)
-        {
-            animator.SetTrigger("Attack");
-        }
-        
-        // 애니메이션 대기
-        yield return new WaitForSeconds(0.3f);
+        // 디버그 로그
+        Debug.Log($"FireHomingProjectile called. Prefab: {homingProjectilePrefab}, FirePoint: {firePoint}");
         
         // 유도 투사체 발사
         if (homingProjectilePrefab != null && firePoint != null)
@@ -116,6 +135,7 @@ public class HomingMonster : MonsterBase
             if (targetTransform != null)
             {
                 GameObject projectile = Instantiate(homingProjectilePrefab, firePoint.position, Quaternion.identity);
+                Debug.Log($"Homing projectile instantiated: {projectile.name}");
                 
                 // 유도 투사체가 알아서 타겟을 추적하도록 함
                 HomingProjectile homing = projectile.GetComponent<HomingProjectile>();
@@ -128,8 +148,39 @@ public class HomingMonster : MonsterBase
                         enemyController.StatManager.GetValue(StatType.AttackPow) : 
                         attackDamage;
                 }
+                else
+                {
+                    Debug.LogWarning("HomingMonster: HomingProjectile component not found on projectile!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("HomingMonster: No target found for projectile!");
             }
         }
+        else
+        {
+            Debug.LogWarning($"HomingMonster: Cannot fire projectile! Prefab: {homingProjectilePrefab}, FirePoint: {firePoint}");
+        }
+    }
+    
+    private IEnumerator HomingAttack()
+    {
+        isAttacking = true;
+        canAttack = false;
+        lastAttackTime = Time.time;
+        
+        // 공격 애니메이션 트리거
+        if (animator != null)
+        {
+            animator.SetTrigger("Attack");
+        }
+        
+        // 애니메이션 대기
+        yield return new WaitForSeconds(0.3f);
+        
+        // 유도 투사체 발사
+        FireHomingProjectile();
         
         // 공격 애니메이션 종료 대기
         yield return new WaitForSeconds(0.2f);

@@ -1,40 +1,26 @@
 using UnityEngine;
-using TMPro;
 
 // 유도 투사체 클래스
 public class HomingProjectile : MonoBehaviour
 {
-    [Header("유도 설정")]
-    public float speed = 8f;
-    public float rotateSpeed = 200f;
+    [Header("투사체 설정")]
+    public float speed = 5f;
     public float damage = 20f;
+    public float rotationSpeed = 200f;
     public float lifeTime = 5f;
     
     private Transform target;
     private Rigidbody2D rb;
     
-    [Header("이펙트")]
-    public GameObject hitEffectPrefab;
-    public GameObject trailEffectPrefab;
-    
-    private void Start()
+    void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        Destroy(gameObject, lifeTime);
         
-        // 트레일 효과
-        if (trailEffectPrefab != null)
-        {
-            Instantiate(trailEffectPrefab, transform);
-        }
+        // 생명 시간 후 자동 파괴
+        Destroy(gameObject, lifeTime);
     }
     
-    public void SetTarget(Transform newTarget)
-    {
-        target = newTarget;
-    }
-    
-    private void FixedUpdate()
+    void FixedUpdate()
     {
         if (target == null)
         {
@@ -43,56 +29,42 @@ public class HomingProjectile : MonoBehaviour
             return;
         }
         
-        // 타겟 방향 계산
-        Vector2 direction = (Vector2)target.position - rb.position;
-        direction.Normalize();
+        // 타겟을 향한 방향 계산
+        Vector2 direction = (target.position - transform.position).normalized;
         
-        // 회전값 계산
-        float rotateAmount = Vector3.Cross(transform.right, direction).z;
+        // 현재 방향에서 타겟 방향으로 회전
+        float rotateAmount = Vector3.Cross(direction, transform.right).z;
+        rb.angularVelocity = -rotateAmount * rotationSpeed;
         
-        // 회전 적용
-        rb.angularVelocity = -rotateAmount * rotateSpeed;
-        
-        // 전진
+        // 앞으로 이동
         rb.linearVelocity = transform.right * speed;
+    }
+    
+    public void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
     }
     
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        // 플레이어에게 맞았을 때
         if (collision.CompareTag("Player"))
         {
-            // 안전한 데미지 처리
+            // 플레이어에게 데미지
             IDamageable damageable = collision.GetComponent<IDamageable>();
             if (damageable != null)
             {
-                // IAttackable이 필요하므로 임시 구현체 생성
+                // 임시 공격자 객체 생성 (데미지만 전달)
                 var tempAttacker = new TempAttacker(damage);
                 damageable.TakeDamage(tempAttacker);
             }
-            else
-            {
-                // PlayerController에 TakeDamage가 없으므로 로그만 출력
-                Debug.Log($"Homing projectile hit player for {damage} damage (PlayerController doesn't implement IDamageable yet)");
-            }
             
-            // 히트 이펙트
-            if (hitEffectPrefab != null)
-            {
-                Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
-            }
-            
+            // 투사체 파괴
             Destroy(gameObject);
         }
-        // 벽이나 지형에 맞았을 때
         else if (collision.CompareTag("Ground") || collision.CompareTag("Wall"))
         {
-            if (hitEffectPrefab != null)
-            {
-                Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
-            }
-            
+            // 벽이나 땅에 충돌시 파괴
             Destroy(gameObject);
         }
     }
-}
+} 
