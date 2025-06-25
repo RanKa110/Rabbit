@@ -22,6 +22,20 @@ public class StatManager : MonoBehaviour
             Stats[stat.StatType] = BaseStatFactory(stat.StatType, stat.Value);
         }
         
+        // MaxHp가 있으면 CurHp를 자동으로 생성
+        if (Stats.ContainsKey(StatType.MaxHp) && !Stats.ContainsKey(StatType.CurHp))
+        {
+            float maxHp = Stats[StatType.MaxHp].GetCurrent();
+            Stats[StatType.CurHp] = BaseStatFactory(StatType.CurHp, maxHp);
+        }
+        
+        // MaxMp가 있으면 CurMp를 자동으로 생성
+        if (Stats.ContainsKey(StatType.MaxMp) && !Stats.ContainsKey(StatType.CurMp))
+        {
+            float maxMp = Stats[StatType.MaxMp].GetCurrent();
+            Stats[StatType.CurMp] = BaseStatFactory(StatType.CurMp, maxMp);
+        }
+        
         OnStatChanged?.Invoke();
     }
     /// <summary>
@@ -42,7 +56,7 @@ public class StatManager : MonoBehaviour
 
     public T GetStat<T>(StatType type) where T : StatBase
     {
-        return Stats[type] as T;
+        return Stats.TryGetValue(type, out var stat) ? stat as T : null;
     }
 
     public float GetValue(StatType type)
@@ -67,7 +81,7 @@ public class StatManager : MonoBehaviour
 
     public void Recover(StatType statType, StatModifierType modifierType, float value)
     {
-        if (Stats[statType] is ResourceStat res)
+        if (Stats.TryGetValue(statType, out var stat) && stat is ResourceStat res)
         {
             if (res.CurrentValue < res.MaxValue)
             {
@@ -87,7 +101,7 @@ public class StatManager : MonoBehaviour
 
     public void Consume(StatType statType, StatModifierType modifierType, float value)
     {
-        if (Stats[statType] is ResourceStat res)
+        if (Stats.TryGetValue(statType, out var stat) && stat is ResourceStat res)
         {
             if (res.CurrentValue > 0)
             {
@@ -117,7 +131,7 @@ public class StatManager : MonoBehaviour
     /// <param name="value"></param>
     public void ApplyStatEffect(StatType type, StatModifierType valueType, float value)
     {
-        if (Stats[type] is not CalculatedStat stat) return;
+        if (!Stats.TryGetValue(type, out var statBase) || statBase is not CalculatedStat stat) return;
 
         switch (valueType)
         {
