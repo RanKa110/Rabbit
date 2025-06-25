@@ -32,6 +32,11 @@ namespace EnemyStates
 
         public EnemyState CheckTransition(EnemyController owner)
         {
+            if (owner.IsDead)
+            {
+                return EnemyState.Die;
+            }
+
             if (owner.Target != null && Vector3.Distance(owner.transform.position, owner.Target.Collider.transform.position) <= owner.Data.DetectionRange)
             {
                 return EnemyState.Chasing;
@@ -252,9 +257,35 @@ namespace EnemyStates
 
     public class DieState : IState<EnemyController, EnemyState>
     {
+        private bool deathProcessStarted = false;
+
         public void OnEnter(EnemyController owner)
         {
-            owner.GetComponent<Collider2D>().enabled = false;
+            if (!deathProcessStarted)
+            {
+                deathProcessStarted = true;
+                owner.StartCoroutine(ProcessDeath(owner));
+            }
+        }
+
+        private IEnumerator ProcessDeath(EnemyController owner)
+        {
+            Debug.Log($"{owner.name} entered Die state");
+            
+            // 이동 정지
+            var rb = owner.GetComponent<Rigidbody2D>();
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector2.zero;
+                rb.angularVelocity = 0f;
+            }
+            
+            // 충돌체 비활성화 (트리거는 유지하여 사망 애니메이션 중 효과 적용 가능)
+            var collider = owner.GetComponent<Collider2D>();
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
             
             // CharacterController가 있으면 비활성화
             var characterController = owner.GetComponent<CharacterController>();
@@ -263,27 +294,95 @@ namespace EnemyStates
                 characterController.enabled = false;
             }
             
-            // Rigidbody2D가 있으면 정지
-            var rb = owner.GetComponent<Rigidbody2D>();
-            if (rb != null)
+            // 사망 애니메이션 재생
+            var animator = owner.GetComponent<Animator>();
+            bool hasDeathAnimation = false;
+            
+            if (animator != null)
             {
-                rb.linearVelocity = Vector2.zero;
-                rb.bodyType = RigidbodyType2D.Static;
+                // Death 트리거 설정
+                animator.SetTrigger("Death");
+                
+                // Death 애니메이션이 있는지 확인
+                AnimatorClipInfo[] clipInfo = animator.GetCurrentAnimatorClipInfo(0);
+                foreach (var clip in clipInfo)
+                {
+                    if (clip.clip.name.ToLower().Contains("death") || clip.clip.name.ToLower().Contains("die"))
+                    {
+                        hasDeathAnimation = true;
+                        break;
+                    }
+                }
             }
             
-            Object.Destroy(owner.gameObject, 1f);
+            // 사망 이펙트 생성
+            if (owner.deathEffectPrefab != null)
+            {
+                GameObject deathEffect = Object.Instantiate(owner.deathEffectPrefab, owner.transform.position, Quaternion.identity);
+                // 이펙트 자동 삭제 (AutoDestroy 컴포넌트가 있다고 가정)
+            }
+            
+            // 사망 사운드 재생
+            if (owner.deathSound != null)
+            {
+                AudioSource audioSource = owner.GetComponent<AudioSource>();
+                if (audioSource != null)
+                {
+                    audioSource.PlayOneShot(owner.deathSound);
+                }
+            }
+            
+            // 아이템 드롭
+            owner.DropItems();
+            
+            // 경험치 부여
+            owner.GiveExperience();
+            
+            // 페이드아웃 효과와 함께 사망 처리
+            float fadeOutDuration = 1f;
+            float deathAnimationDuration = hasDeathAnimation ? 1.5f : 0.5f;
+            
+            // 사망 애니메이션 재생 대기
+            yield return new WaitForSeconds(deathAnimationDuration);
+            
+            // 페이드아웃 시작
+            var spriteRenderer = owner.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null)
+            {
+                Color originalColor = spriteRenderer.color;
+                float elapsed = 0f;
+                
+                while (elapsed < fadeOutDuration)
+                {
+                    elapsed += Time.deltaTime;
+                    float alpha = Mathf.Lerp(1f, 0f, elapsed / fadeOutDuration);
+                    spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+                    
+                    // 크기도 서서히 줄이기 (선택사항)
+                    float scale = Mathf.Lerp(1f, 0.8f, elapsed / fadeOutDuration);
+                    owner.transform.localScale = Vector3.one * scale;
+                    
+                    yield return null;
+                }
+            }
+            
+            // 몬스터 제거
+            Object.Destroy(owner.gameObject);
         }
 
         public void OnUpdate(EnemyController owner)
         {
+            // 죽음 상태에서는 아무것도 하지 않음
         }
 
         public void OnExit(EnemyController owner)
         {
+            // 죽음 상태에서는 나가지 않음
         }
 
         public EnemyState CheckTransition(EnemyController owner)
         {
+            // 죽음 상태에서는 다른 상태로 전환하지 않음
             return EnemyState.Die;
         }
     }

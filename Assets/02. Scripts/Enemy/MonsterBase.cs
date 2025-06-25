@@ -19,6 +19,7 @@ public abstract class MonsterBase : MonoBehaviour, IAttackable
     protected Animator animator;
     protected SpriteRenderer spriteRenderer;
     protected Transform player;
+    protected EnemyHealthBar healthBar; // HP바 컴포넌트 추가
     
     [Header("상태")]
     protected bool isAttacking = false;
@@ -47,6 +48,14 @@ public abstract class MonsterBase : MonoBehaviour, IAttackable
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        
+        // HP바 컴포넌트 가져오기 또는 추가
+        healthBar = GetComponent<EnemyHealthBar>();
+        if (healthBar == null)
+        {
+            healthBar = gameObject.AddComponent<EnemyHealthBar>();
+            Debug.Log($"{gameObject.name}: EnemyHealthBar component added automatically");
+        }
         
         currentHealth = maxHealth;
         
@@ -154,6 +163,13 @@ public abstract class MonsterBase : MonoBehaviour, IAttackable
         
         currentHealth -= damage;
         
+        // HP바 업데이트
+        if (healthBar != null)
+        {
+            healthBar.SetHealth(currentHealth, maxHealth);
+            healthBar.ShowHealthBar(); // 데미지를 받으면 HP바 표시
+        }
+        
         // 피격 효과
         StartCoroutine(HitEffect());
         
@@ -174,6 +190,12 @@ public abstract class MonsterBase : MonoBehaviour, IAttackable
     {
         isDead = true;
         currentState = MonsterState.Dead;
+        
+        // HP바 숨기기
+        if (healthBar != null)
+        {
+            healthBar.HideHealthBar();
+        }
         
         // 충돌체 비활성화
         GetComponent<Collider2D>().enabled = false;

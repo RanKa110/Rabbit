@@ -6,6 +6,7 @@ public enum EnemyType
     Melee,
     Ranged,
     Homing,
+    MultiShot,
     Boss
 }
 
@@ -23,6 +24,9 @@ public class EnemySO : ScriptableObject, IStatProvider
     
     [Tooltip("Projectile prefab for homing attacks")]
     public GameObject HomingProjectilePrefab;
+
+    [Tooltip("Projectile prefab for homing attacks")]
+    public GameObject MultiShotProjectilePrefab;
 
     // 기존 필드는 호환성을 위해 유지 (deprecated)
     [HideInInspector]
