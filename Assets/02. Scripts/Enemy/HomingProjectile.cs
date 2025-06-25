@@ -6,11 +6,12 @@ public class HomingProjectile : MonoBehaviour
     [Header("투사체 설정")]
     public float speed = 5f;
     public float damage = 20f;
-    public float rotationSpeed = 200f;
+    public float rotationSpeed = 400f; // 회전 속도 증가 (200 -> 400)
     public float lifeTime = 5f;
     
     private Transform target;
     private Rigidbody2D rb;
+    private Vector2 initialDirection; // 초기 방향 저장
     
     void Start()
     {
@@ -18,14 +19,29 @@ public class HomingProjectile : MonoBehaviour
         
         // 생명 시간 후 자동 파괴
         Destroy(gameObject, lifeTime);
+        
+        // 타겟이 설정되어 있으면 초기 방향을 타겟 방향으로
+        if (target != null)
+        {
+            initialDirection = (target.position - transform.position).normalized;
+            
+            // 즉시 타겟을 바라보도록 회전
+            float angle = Mathf.Atan2(initialDirection.y, initialDirection.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        }
+        else
+        {
+            // 타겟이 없으면 현재 방향 유지
+            initialDirection = transform.right;
+        }
     }
     
     void FixedUpdate()
     {
         if (target == null)
         {
-            // 타겟이 없으면 직진
-            rb.linearVelocity = transform.right * speed;
+            // 타겟이 없으면 초기 방향으로 직진
+            rb.linearVelocity = initialDirection * speed;
             return;
         }
         
@@ -43,6 +59,22 @@ public class HomingProjectile : MonoBehaviour
     public void SetTarget(Transform newTarget)
     {
         target = newTarget;
+        
+        // 타겟이 설정되면 초기 방향을 타겟 방향으로 설정
+        if (target != null)
+        {
+            initialDirection = (target.position - transform.position).normalized;
+            
+            // 즉시 타겟을 바라보도록 회전
+            float angle = Mathf.Atan2(initialDirection.y, initialDirection.x) * Mathf.Rad2Deg;
+            transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+            
+            // 즉시 이동 시작
+            if (rb != null)
+            {
+                rb.linearVelocity = initialDirection * speed;
+            }
+        }
     }
     
     private void OnTriggerEnter2D(Collider2D collision)
@@ -67,4 +99,4 @@ public class HomingProjectile : MonoBehaviour
             Destroy(gameObject);
         }
     }
-} 
+}

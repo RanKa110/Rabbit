@@ -213,11 +213,8 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
             _healthBar.HideHealthBar();
         }
         
-        // 애니메이션 트리거
-        if (_animator != null)
-        {
-            _animator.SetTrigger("Death");
-        }
+        // 피격 효과 시작
+        StartCoroutine(DeathEffect());
     }
 
     public void TakeDamage(IAttackable attacker)
@@ -256,6 +253,28 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
             _spriteRenderer.color = Color.red;
             yield return new WaitForSeconds(0.1f);
             _spriteRenderer.color = Color.white;
+        }
+    }
+    
+    private System.Collections.IEnumerator DeathEffect()
+    {
+        if (_spriteRenderer != null)
+        {
+            // 페이드 아웃 효과
+            Color originalColor = _spriteRenderer.color;
+            float elapsed = 0f;
+            float duration = 1f;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
+                _spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
+                yield return null;
+            }
+            
+            // 완전히 투명해지면 오브젝트 비활성화 또는 삭제
+            gameObject.SetActive(false);
         }
     }
 

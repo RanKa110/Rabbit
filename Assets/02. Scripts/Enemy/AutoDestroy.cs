@@ -6,17 +6,17 @@ public class AutoDestroy : MonoBehaviour
     [SerializeField] private float destroyTime = 1f;
     [SerializeField] private bool useParticleSystemDuration = true;
     
-    private ParticleSystem particleSystem;
+    private ParticleSystem particleSystemComponent;
     
     void Start()
     {
-        particleSystem = GetComponent<ParticleSystem>();
+        particleSystemComponent = GetComponent<ParticleSystem>();
         
         // 파티클 시스템이 있고 duration 사용 옵션이 켜져있으면
-        if (useParticleSystemDuration && particleSystem != null)
+        if (useParticleSystemDuration && particleSystemComponent != null)
         {
             // 파티클 시스템의 전체 재생 시간을 계산
-            float totalDuration = particleSystem.main.duration + particleSystem.main.startLifetime.constantMax;
+            float totalDuration = particleSystemComponent.main.duration + particleSystemComponent.main.startLifetime.constantMax;
             Destroy(gameObject, totalDuration);
         }
         else
