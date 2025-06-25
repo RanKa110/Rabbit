@@ -18,7 +18,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     [SerializeField] private float groundCheckRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
     //[SerializeField] private TrailRenderer trailRenderer;
-
+    
     
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
@@ -30,8 +30,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private bool _dashTriggered;
     private bool _isDashing;
     private bool _isCrouch;
-    private bool _attackTriggered;
-    private bool _isAttacking;
+    private bool comboAttackTriggered;
+    private bool isComboAttacking;
     private bool _jumpTriggered;
     private bool _doubleJumpAvailable = true;
 
@@ -77,21 +77,21 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     [NonSerialized] public bool CanDash = true;
 
-    public bool AttackTriggered
+    public bool ComboAttackTriggered
     {
-        get => _attackTriggered;
-        set => _attackTriggered = value;
+        get => comboAttackTriggered;
+        set => comboAttackTriggered = value;
     }
 
-    public bool IsAttacking
+    public bool IsComboAttacking
     {
-        get => _isAttacking;
-        set => _isAttacking = value;
+        get => isComboAttacking;
+        set => isComboAttacking = value;
     }
     
     public StatBase AttackStat { get; private set; }
     public IDamageable Target { get; private set; }
-    public Transform Transform  => transform;
+    public Transform Transform => transform;
     public Animator Animator => _animator;
 
     public bool IsDead
@@ -138,7 +138,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         
         action.Jump.started += _ => _jumpTriggered = true;
 
-        action.Attack.started += _ => _attackTriggered = true;
+        action.Attack.started += _ => comboAttackTriggered = true;
     }
 
     protected override void Update()
@@ -148,20 +148,23 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         if (_isDashing)
             return;
         
+        if (IsComboAttacking)
+            return;
+        
         Rotate();
     }
     
     private void FixedUpdate()
     {
         if (_isDashing)
-        {
             return;
-        }
 
         if (!CanDash)
             _dashTriggered = false;
         
-        Movement();
+        if (!IsComboAttacking)
+            Movement();
+        
         if (!IsGrounded)
             Fall();
     }
@@ -268,12 +271,23 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public void AttackAllTargets()
     {
-        _attackTriggered = false;
+        comboAttackTriggered = false;
+        FindTarget();
+        foreach (var target in _targets)
+        {
+            Target = target;
+            Attack();
+        }
     }
 
     public override void FindTarget()
     {
-        
+        _targets = HitBox.GetComponent<DamageableSensor>().Damageables;
+    }
+
+    public void StopMoving()
+    {
+        _rigidbody2D.linearVelocityX = 0f;
     }
     
 

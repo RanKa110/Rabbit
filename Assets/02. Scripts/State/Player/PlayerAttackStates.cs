@@ -9,20 +9,23 @@ namespace PlayerAttackStates
         private AttackInfoData _attackInfoData;
         private Coroutine _attackCoroutine;
         private bool _alreadyAppliedCombo;
+        private float _time = 0f;
 
         public override void OnEnter(PlayerController owner)
         {
-            owner.IsAttacking = true;
+            owner.IsComboAttacking = true;
+            owner.StopMoving();
             _alreadyAppliedCombo = false;
             _attackInfoData = owner.ComboAttackInfoDatas[owner.ComboIndex];
             _attackCoroutine = owner.StartCoroutine(DoAttack(owner));
+            Debug.Log(_attackInfoData.AttackName);
+            _time = 0f;
         }
 
         protected override IEnumerator DoAttack(PlayerController owner)
         {
             Animator animator = owner.Animator;
             string attackName = _attackInfoData.AttackName;
-            //animator.SetTrigger(attackName);
 
             yield return new WaitUntil(() =>
                 GetNormalizedTime(animator, attackName) >= _attackInfoData.DealingStartTransitionTime);
@@ -32,34 +35,44 @@ namespace PlayerAttackStates
 
             if (_alreadyAppliedCombo)
             {
-                owner.ComboIndex = _attackInfoData.ComboStateIndex != -1 ? _attackInfoData.ComboStateIndex : 0;
+                owner.ComboIndex = _attackInfoData.ComboStateIndex != -1 ? _attackInfoData.ComboStateIndex + 1 : 0;
             }
             else
             {
                 owner.ComboIndex = 0;
             }
 
-            owner.IsAttacking = false;
+            owner.IsComboAttacking = false;
         }
 
         public override void OnUpdate(PlayerController owner)
         {
+            _time += Time.deltaTime;
             TryComboAttack(owner);
         }
 
         public override void OnExit(PlayerController owner)
         {
-            owner.AttackTriggered = false;
+            owner.ComboAttackTriggered = false;
+            if (_attackCoroutine != null)
+                owner.StopCoroutine(_attackCoroutine);
+            owner.IsComboAttacking = false;
+            owner.JumpTriggered = false;
+            owner.DashTriggered = false;
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
-            
-            return PlayerState.Idle;
+            if (!owner.IsComboAttacking)
+                return PlayerState.Idle;
+
+            return PlayerState.ComboAttack;
         }
         
         protected float GetNormalizedTime(Animator animator, string tag)
         {
+            // 애니메이션 연결할 때 지워야함
+            return _time;
             AnimatorStateInfo currentInfo = animator.GetCurrentAnimatorStateInfo(0);
             AnimatorStateInfo nextInfo = animator.GetNextAnimatorStateInfo(0);
             
@@ -80,12 +93,15 @@ namespace PlayerAttackStates
         private void TryComboAttack(PlayerController owner)
         {
             if (_alreadyAppliedCombo) return;
-
             if (_attackInfoData.ComboStateIndex == -1) return;
+            if (!owner.IsComboAttacking) return;
 
-            if (!owner.IsAttacking) return;
-
-            _alreadyAppliedCombo = true;
+            if (owner.ComboAttackTriggered && GetNormalizedTime(owner.Animator, _attackInfoData.AttackName) >=
+                _attackInfoData.ComboTransitionTime)
+            {
+                _alreadyAppliedCombo = true;
+                owner.ComboAttackTriggered = false;
+            }
         }
     }
 }
