@@ -34,7 +34,9 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private List<IDamageable> _targets = new List<IDamageable>();
 
     private bool _isDead;
-    
+
+    public AudioClip Jumpcilp;
+
     public Vector2 MoveInput => _moveInput;
     public bool IsCrouch => _isCrouch;
     public bool IsGrounded =>
