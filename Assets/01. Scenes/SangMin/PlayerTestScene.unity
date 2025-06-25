@@ -124,29 +124,28 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1414845790967772001, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
   m_PrefabInstance: {fileID: 902128925367397006}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &25624490
-MonoBehaviour:
+--- !u!95 &25624491
+Animator:
+  serializedVersion: 7
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 25624480}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 73933c06de3a13144a1cb5ced7ba6395, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  <AnimationData>k__BackingField:
-    groundParameterName: '@Ground'
-    idleParameterName: Idle
-    moveParameterName: Move
-    airParameterName: '@Air'
-    jumpParameterName: Jump
-    fallParameterName: Fall
-    doubleJumpParameterName: DoubleJump
-    attackParameterName: Attack
-    actionParameterName: '@Action'
-    dashParameterName: Dash
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: fe08f55343228ec47b1bda67f1e96891, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &221004049
 GameObject:
   m_ObjectHideFlags: 0
@@ -595,16 +594,20 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
-      propertyPath: trailRenderer
-      value: 
+      propertyPath: <AttackInfoDatas>k__BackingField.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: <ComboAttackInfoDatas>k__BackingField.Array.size
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1414845790967772001, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 25624490}
+      insertIndex: 2
+      addedObject: {fileID: 25624491}
   m_SourcePrefab: {fileID: 100100000, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
 --- !u!1001 &3274440069967169150
 PrefabInstance:
