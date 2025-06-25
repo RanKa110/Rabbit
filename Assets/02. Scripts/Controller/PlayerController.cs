@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using PlayerGroundStates;
@@ -12,13 +13,19 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(InputController))]
 public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable, IDamageable
 {
+    [SerializeField] private Transform groundCheck;
+    [SerializeField] private float groundCheckRadius = 0.1f;
+    [SerializeField] private LayerMask groundLayer;
+    //[SerializeField] private TrailRenderer trailRenderer;
+    
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
     private InputController _inputController;
     private SpriteRenderer _spriteRenderer;
     
     private Vector2 _moveInput;
-    private bool _isRunning;
+    private bool _dashTriggered;
+    private bool _isDashing;
     private bool _isCrouch;
     private bool _attackTriggered;
     private bool _jumpTriggered;
@@ -26,16 +33,44 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     private List<IDamageable> _targets = new List<IDamageable>();
 
-    public bool _isDead;
+    private bool _isDead;
     
     public Vector2 MoveInput => _moveInput;
-    public bool IsRunning => _isRunning;
     public bool IsCrouch => _isCrouch;
-    public bool IsGrounded => _boxCollider2D.IsTouchingLayers(LayerMask.GetMask("Ground"));
+    public bool IsGrounded =>
+        Physics2D.OverlapCircle(
+            groundCheck.position,
+            groundCheckRadius,
+            groundLayer
+        ) != null;
     
     public float VelocityY => _rigidbody2D.linearVelocity.y;
-    public bool JumpTriggered => _jumpTriggered;
-    public bool CanDoubleJump => _doubleJumpAvailable;
+
+    public bool JumpTriggered
+    {
+        get => _jumpTriggered;
+        set => _jumpTriggered = value;
+    }
+
+    public bool CanDoubleJump
+    {
+        get => _doubleJumpAvailable;
+        set => _doubleJumpAvailable = value;
+    }
+
+    public bool DashTriggered
+    {
+        get => _dashTriggered;
+        set => _dashTriggered = value;
+    }
+
+    public bool IsDashing
+    {
+        get => _isDashing;
+        set => _isDashing = value;
+    }
+
+    public bool CanDash = true;
 
     public bool AttackTriggered
     {
@@ -68,38 +103,49 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     protected override void Start()
     {
-        base.Start();
         PlayerTable playerTable = TableManager.Instance.GetTable<PlayerTable>();
         PlayerSO playerData = playerTable.GetDataByID(0);
         StatManager.Initialize(playerData, null);
+        
+        base.Start();
 
         var action = _inputController.PlayerActions;
         action.Move.performed += context => _moveInput = context.ReadValue<Vector2>();
         action.Move.canceled += _ => _moveInput = Vector2.zero;
 
-        action.Run.performed += _ => _isRunning = true;
-        action.Run.canceled += _ => _isRunning = false;
+        action.Dash.started += _ => _dashTriggered = true; 
 
         action.Crouch.performed += _ => _isCrouch = true;
         action.Crouch.canceled += _ => _isCrouch = false; 
         
-        action.Jump.performed += _ => _jumpTriggered = true;
-        action.Jump.canceled += _ => _jumpTriggered = false;
+        action.Jump.started += _ => _jumpTriggered = true;
 
-        action.Attack.performed += _ => _attackTriggered = true;
-        action.Attack.canceled += _ => _attackTriggered = false;
+        action.Attack.started += _ => _attackTriggered = true;
     }
 
     protected override void Update()
     {
         base.Update();
+
+        if (_isDashing)
+            return;
         
         Rotate();
     }
-
+    
     private void FixedUpdate()
     {
+        if (_isDashing)
+        {
+            return;
+        }
+
+        if (!CanDash)
+            _dashTriggered = false;
+        
         Movement();
+        if (!IsGrounded)
+            Fall();
     }
 
     /// <summary>
@@ -113,7 +159,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         {
             PlayerState.Idle => new IdleState(),
             PlayerState.Move => new MoveState(),
-            PlayerState.Run => new RunState(),
+            PlayerState.Dash => new DashState(),
 
             PlayerState.Jump => new JumpState(),
             PlayerState.Fall => new FallState(),
@@ -126,8 +172,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public override void Movement()
     {
-        float speed = StatManager.GetValue(StatType.MoveSpeed) *
-                      (_isRunning ? StatManager.GetValue(StatType.RunMultiplier) : 1f);
+        float speed = StatManager.GetValue(StatType.MoveSpeed);
         _rigidbody2D.linearVelocity =
             new Vector2(MoveInput.x * speed, _rigidbody2D.linearVelocityY);
     }
@@ -138,6 +183,53 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
             _spriteRenderer.flipX = false;
         else if (MoveInput.x < -0.01f)
             _spriteRenderer.flipX = true;
+    }
+
+    public void Fall()
+    {
+        if (VelocityY < 0)
+        {
+            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 2.3f * Time.fixedDeltaTime;
+        }
+        else
+        {
+            _rigidbody2D.linearVelocity += Vector2.up * Physics2D.gravity.y * 0.43f * Time.fixedDeltaTime;
+        }
+    }
+
+    public void Jump()
+    {
+        _jumpTriggered = false;
+        if (IsGrounded)
+        {
+            _rigidbody2D.AddForceY(StatManager.GetValue(StatType.JumpForce), ForceMode2D.Impulse);
+        } 
+        else if (_doubleJumpAvailable)
+        {
+            _rigidbody2D.linearVelocity = new Vector2(_rigidbody2D.linearVelocityX, 0);
+            _rigidbody2D.AddForceY(StatManager.GetValue(StatType.JumpForce), ForceMode2D.Impulse);
+            _doubleJumpAvailable = false;
+        }
+    }
+
+    public IEnumerator Dash()
+    {
+        CanDash = false;
+        IsDashing = true;
+
+        float originGravity = _rigidbody2D.gravityScale;
+        _rigidbody2D.gravityScale = 0f;
+        _rigidbody2D.linearVelocity = StatManager.GetValue(StatType.DashForce) *
+                                      (_spriteRenderer.flipX ? Vector2.left : Vector2.right);
+
+        yield return new WaitForSeconds(0.2f);
+
+        _rigidbody2D.gravityScale = originGravity;
+        IsDashing = false;
+
+        yield return new WaitForSeconds(1.5f);
+
+        CanDash = true;
     }
 
     public void Attack()

@@ -8,32 +8,30 @@ namespace BossStates
     {
         public void OnEnter(BossController owner)
         {
-            //Debug.Log("IdleState.OnEnter");
         }
 
         public void OnUpdate(BossController owner)
         {
-            //Debug.Log("IdleState.OnUpdate");
         }
 
         public void OnExit(BossController entity)
         {
-            //Debug.Log("IdleState.OnExit");
         }
 
 
         public BossState CheckTransition(BossController owner)
         {
-            //Debug.Log("▶ IdleState.CheckTransition");
 
-            if (owner.Target != null)
+            if (owner.Target == null || owner.Target.IsDead)
             {
-                float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
+                return BossState.Idle;
+            }
 
-                if (distance <= owner.DetectionRange)
-                {
-                    return BossState.Chasing;
-                }
+            float distance = Vector2.Distance(owner.transform.position, owner.Target.Collider.transform.position);
+
+            if (distance <= owner.DetectionRange)
+            {
+                return BossState.Chasing;
             }
 
             return BossState.Idle;
@@ -49,8 +47,9 @@ namespace BossStates
 
         public void OnUpdate(BossController owner)
         {
-            owner.Movement();
-            Debug.Log("ChasingState.OnUpdate → Movement()");
+            Debug.Log("보스 추격 시행 중..");
+            owner.FaceToTarget();           //  방향을 먼저 전환
+            owner.Movement();               //  그 다음에 이동
         }
 
         public void OnExit(BossController entity)
@@ -67,6 +66,11 @@ namespace BossStates
                 return BossState.Die;
             }
 
+            if (owner.Target == null || owner.Target.IsDead)
+            {
+                return BossState.Idle;
+            }
+
             //  콜라이더 중심 좌표 구하기
             Vector2 bossCenter = owner.Collider.bounds.center;
             Vector2 playerCenter = owner.Target.Collider.bounds.center;
@@ -79,7 +83,7 @@ namespace BossStates
             const float epsilon = 0.1f;
             float threshold = atkRange + epsilon;
 
-            Debug.Log($"distance = {distance}, attackRange = {atkRange + epsilon}");
+            //Debug.Log($"distance = {distance}, attackRange = {atkRange + epsilon}");
 
             //  비교
             if (distance <= threshold)
@@ -101,6 +105,8 @@ namespace BossStates
         {
             Debug.Log("보스 공격 상태 진입!");
 
+            owner.FaceToTarget();
+
             _attackDone = false;
 
             float atkSpd = owner.StatManager.GetValue(StatType.AttackSpd);
@@ -114,8 +120,7 @@ namespace BossStates
             yield return new WaitForSeconds(1f / atkSpd);
 
             //  기본 공격
-            owner.BasicAttack();
-            owner.AddBasicGauge();          //  기본 공격 시, 해당 게이지 차징
+            owner.Attack();
 
             //  쿨타임
             yield return new WaitForSeconds(owner.AttackCooldownValue);
@@ -152,38 +157,33 @@ namespace BossStates
                 return BossState.Chasing;
             }
 
-            //  게이지가 가득 찼다면 패턴 공격 시행
-            //  1. 게이지 초기화
+            //  패턴 진입 로직
             owner.ResetBasicGauge();
 
-            //  2. 현재 체력 비율 계산
             float curHp = owner.StatManager.GetValue(StatType.CurHp);
             float maxHp = owner.StatManager.GetValue(StatType.MaxHp);
-            float hpPercent = curHp / maxHp;
+            float hpRatio = curHp / maxHp;
 
-            //  3. HP 구간 별 패턴 풀 크기 결정
-            int maxPatternCount;
+            int maxPatternIndex = GetMaxPatternIndex(hpRatio);
+            int selectedIndex = Random.Range(0, maxPatternIndex);
+            Debug.Log($"HP {hpRatio * 100}% → 패턴 {selectedIndex + 1} 진입");
 
-            if (hpPercent >= 0.7f && hpPercent <= 100f)
+            return BossState.Pattern1 + selectedIndex;
+        }
+
+        private int GetMaxPatternIndex(float hpRatio)
+        {
+            if (hpRatio >= 0.7f)
             {
-                maxPatternCount = 1;        //  패턴 1 시행
+                return 1;
             }
 
-            else if (hpPercent >= 0.45f)
+            if (hpRatio >= 0.45f)
             {
-                maxPatternCount = 2;        //  패턴 1,2 시행
+                return 2;
             }
 
-            else
-            {
-                maxPatternCount = 3;        //  패턴 1,2,3 시행
-            }
-
-            //  4. 풀에서 랜덤 선택
-            int idx = Random.Range(0, maxPatternCount);
-            Debug.Log($"HP {hpPercent * 100: F0}% → 패턴 {idx + 1} 진입");
-
-            return (BossState)((int)BossState.Pattern1 + idx);
+            return 3;
         }
     }
 
@@ -192,12 +192,14 @@ namespace BossStates
     {
         private readonly int _index;
         private float _timer;
+        private bool _patternStarted;
 
         public PatternState(int index) => _index = index;
 
         public void OnEnter(BossController owner)
         {
             _timer = 0f;
+            _patternStarted = false;
             Debug.Log($"패턴 {_index + 1} 상태 진입!");
 
             //  TODO: 여기에 패턴 로직을 추가해야 합니다.
@@ -205,7 +207,20 @@ namespace BossStates
 
         public void OnUpdate(BossController owner)
         {
+            if (!_patternStarted)
+            {
+                _patternStarted = true;
+                owner.StartCoroutine(RunPattern(owner));
+            }
+
             _timer += Time.deltaTime;
+        }
+
+        private IEnumerator RunPattern(BossController owner)
+        {
+            //  여기에 실제 패턴 공격 로직 삽입할 것
+            yield return new WaitForSeconds(0.5f);      //  예시용 준비 시간
+            Debug.Log($"패턴 {_index + 1} 실행 중..");
         }
 
         public void OnExit(BossController entity)
@@ -215,12 +230,84 @@ namespace BossStates
 
         public BossState CheckTransition(BossController owner)
         {
-            if (_timer >= owner.Data.PatternDelays[_index])
+            if (owner.IsDead)
+            {
+                return BossState.Die;
+            }
+
+            if (_timer >= owner.GetPatternDelay(_index))
             {
                 return BossState.Chasing;
             }
 
-            return (BossState)((int)BossState.Pattern1 + _index);
+
+            return BossState.Pattern1 + _index;
+        }
+    }
+
+    public class EvadeState : IState<BossController, BossState>
+    {
+        private bool _evadeComplete;
+
+        public void OnEnter(BossController owner)
+        {
+            _evadeComplete = false;
+            owner.StartCoroutine(DoEvade(owner));
+        }
+
+        private IEnumerator DoEvade(BossController owner)
+        {
+            Debug.Log("보스 회피 시작");
+
+            //  순간적으로 뒤로 물러나기
+            Vector2 bossPos = owner.transform.position;
+            Vector2 dir = (owner.transform.position - owner.Target.Collider.bounds.center).normalized;
+
+            float evadeDistance = 3f;
+            float evadeSpeed = 20f;
+
+            float t = 0f;
+            float duration = 0.15f;
+            Vector2 start = bossPos;
+            Vector2 end = bossPos + dir * evadeDistance;
+
+            while (t < 1f)
+            {
+                t += Time.deltaTime / duration;
+
+                Vector2 newPos = Vector2.Lerp(start, end, t);
+
+                owner.transform.position = newPos;
+
+                yield return null;
+            }
+
+            Debug.Log("보스 회피 완료");
+            _evadeComplete = true;
+        }
+
+        public void OnUpdate(BossController owner)
+        {
+        }
+
+        public void OnExit(BossController owner)
+        {
+            Debug.Log("보스 회피 상태 종료");
+        }
+
+        public BossState CheckTransition(BossController owner)
+        {
+            if (owner.IsDead)
+            {
+                return BossState.Die;
+            }
+
+            if (_evadeComplete)
+            {
+                return BossState.Chasing;   //  회피 후 다시 추격 상태로!
+            }
+
+            return BossState.Evade;
         }
     }
 
