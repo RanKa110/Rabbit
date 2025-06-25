@@ -3,11 +3,17 @@ public enum PlayerState
     Idle,
     Move,
     Crouch,
-    Dash,
     
     Jump,
     Fall,
     DoubleJump,
     
-    Attack,
+    ComboAttack,
+    AirAttack,
+    
+    Defense,
+    Parrying,
+    Evasion,
+    Dash,
+    
 }

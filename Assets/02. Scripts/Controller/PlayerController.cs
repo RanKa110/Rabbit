@@ -5,6 +5,7 @@ using System.Linq;
 using PlayerGroundStates;
 using PlayerAirStates;
 using PlayerAttackStates;
+using PlayerActionStates;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -17,11 +18,15 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     [SerializeField] private float groundCheckRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
     //[SerializeField] private TrailRenderer trailRenderer;
+
+    [field:SerializeField] private List<AttackInfoData> comboAttackInfoDatas;
+    [field:SerializeField] private AttackInfoData airAttackInfoData;
     
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
     private InputController _inputController;
     private SpriteRenderer _spriteRenderer;
+    private Animator _animator;
     
     private Vector2 _moveInput;
     private bool _dashTriggered;
@@ -42,7 +47,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
             groundCheck.position,
             groundCheckRadius,
             groundLayer
-        ) != null;
+        );
     
     public float VelocityY => _rigidbody2D.linearVelocity.y;
 
@@ -70,7 +75,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         set => _isDashing = value;
     }
 
-    public bool CanDash = true;
+    [NonSerialized] public bool CanDash = true;
 
     public bool AttackTriggered
     {
@@ -81,6 +86,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public StatBase AttackStat { get; private set; }
     public IDamageable Target { get; private set; }
     public Transform Transform  => transform;
+    public Animator Animator => _animator;
 
     public bool IsDead
     {
@@ -90,6 +96,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public Collider2D Collider { get; private set; }
 
+    public GameObject HitBox;
+
     protected override void Awake()
     {
         base.Awake();
@@ -97,6 +105,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         _boxCollider2D = GetComponent<BoxCollider2D>();
         _inputController = GetComponent<InputController>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
+        _animator = GetComponent<Animator>();
 
         Collider = GetComponent<Collider2D>();
     }
@@ -159,13 +168,14 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         {
             PlayerState.Idle => new IdleState(),
             PlayerState.Move => new MoveState(),
-            PlayerState.Dash => new DashState(),
 
             PlayerState.Jump => new JumpState(),
             PlayerState.Fall => new FallState(),
             PlayerState.DoubleJump => new DoubleJumpState(),
             
-            PlayerState.Attack => new AttackState(1, 1),
+            PlayerState.ComboAttack => new ComboAttackState(comboAttackInfoDatas[0]),
+            
+            PlayerState.Dash => new DashState(),
             _ => null
         };
     }
@@ -180,9 +190,19 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public void Rotate()
     {
         if (MoveInput.x > 0.01f)
+        {
             _spriteRenderer.flipX = false;
+            var pos = HitBox.transform.localPosition;
+            pos.x = 1f;
+            HitBox.transform.localPosition = pos;
+        }
         else if (MoveInput.x < -0.01f)
+        {
             _spriteRenderer.flipX = true;
+            var pos = HitBox.transform.localPosition;
+            pos.x = -1f;
+            HitBox.transform.localPosition = pos;
+        }
     }
 
     public void Fall()
@@ -227,7 +247,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         _rigidbody2D.gravityScale = originGravity;
         IsDashing = false;
 
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(0.5f);
 
         CanDash = true;
     }
