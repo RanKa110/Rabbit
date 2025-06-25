@@ -10,6 +10,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     private CharacterController _characterController;
     private IDamageable _target;
     private bool _isDead;
+    private EnemyHealthBar _healthBar; // HP바 컴포넌트 추가
 
     public bool IsDead => _isDead;
     public Collider2D Collider { get; private set; }
@@ -47,6 +48,15 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         Collider = GetComponent<Collider2D>();
+        
+        // HP바 컴포넌트 가져오기 또는 추가
+        _healthBar = GetComponent<EnemyHealthBar>();
+        if (_healthBar == null)
+        {
+            _healthBar = gameObject.AddComponent<EnemyHealthBar>();
+            Debug.Log($"{gameObject.name}: EnemyHealthBar component added automatically");
+        }
+        
         StatManager.Initialize(Data, this);
         AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
     }
@@ -54,6 +64,14 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     protected override void Start()
     {
         base.Start();
+        
+        // HP바 초기화
+        if (_healthBar != null)
+        {
+            float maxHp = StatManager.GetValueSafe(StatType.MaxHp, 100f);
+            float curHp = StatManager.GetValueSafe(StatType.CurHp, maxHp);
+            _healthBar.SetHealth(curHp, maxHp);
+        }
     }
 
     protected override void Update()
@@ -84,7 +102,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
             return;
         }
 
-        float speed = StatManager.GetValue(StatType.MoveSpeed);
+        float speed = StatManager.GetValueSafe(StatType.MoveSpeed, 5f);
         Vector3 dir = (_target.Collider.transform.position - transform.position).normalized;
 
         if (_characterController != null && _characterController.enabled)
@@ -102,7 +120,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     {
         if (_target == null) return;
 
-        float speed = StatManager.GetValue(StatType.MoveSpeed);
+        float speed = StatManager.GetValueSafe(StatType.MoveSpeed, 5f);
         float distanceToTarget = Vector3.Distance(transform.position, _target.Collider.transform.position);
         
         Vector3 dir;
@@ -189,6 +207,12 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     {
         _isDead = true;
         
+        // HP바 숨기기
+        if (_healthBar != null)
+        {
+            _healthBar.HideHealthBar();
+        }
+        
         // 애니메이션 트리거
         if (_animator != null)
         {
@@ -205,11 +229,20 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         // HP 감소 (데미지 처리)
         StatManager.Consume(StatType.CurHp, StatModifierType.Base, damage);
         
+        // HP바 업데이트
+        if (_healthBar != null)
+        {
+            float maxHp = StatManager.GetValueSafe(StatType.MaxHp, 100f);
+            float currentHp = StatManager.GetValueSafe(StatType.CurHp, maxHp);
+            _healthBar.SetHealth(currentHp, maxHp);
+            _healthBar.ShowHealthBar(); // 데미지를 받으면 HP바 표시
+        }
+        
         // 피격 효과
         StartCoroutine(HitEffect());
         
         // HP 체크 (StatManager의 Consume에서 자동으로 Dead()가 호출되지만 상태 변경은 여기서)
-        float currentHealth = StatManager.GetValue(StatType.CurHp);
+        float currentHealth = StatManager.GetValueSafe(StatType.CurHp, 0f);
         if (currentHealth <= 0)
         {
             ChangeState(EnemyState.Die);
