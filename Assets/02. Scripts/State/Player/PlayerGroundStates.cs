@@ -19,6 +19,9 @@ namespace PlayerGroundStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.AttackTriggered)
+                return PlayerState.ComboAttack;
+            
             if (owner.JumpTriggered)
                 return PlayerState.Jump;
             
@@ -52,6 +55,9 @@ namespace PlayerGroundStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.AttackTriggered)
+                return PlayerState.ComboAttack;
+
             if (owner.VelocityY < 0)
                 return PlayerState.Fall;
             

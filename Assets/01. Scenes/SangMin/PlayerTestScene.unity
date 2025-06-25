@@ -594,12 +594,68 @@ PrefabInstance:
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
       propertyPath: <AttackInfoDatas>k__BackingField.Array.size
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
       propertyPath: <ComboAttackInfoDatas>k__BackingField.Array.size
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[0].<AttackName>k__BackingField
+      value: Attack 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[1].<AttackName>k__BackingField
+      value: Attack 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[2].<AttackName>k__BackingField
+      value: Attack 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[1].<ComboStateIndex>k__BackingField
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[2].<ComboStateIndex>k__BackingField
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[0].<ComboTransitionTime>k__BackingField
+      value: 0.483
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[1].<ComboTransitionTime>k__BackingField
+      value: 0.739
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[2].<ComboTransitionTime>k__BackingField
+      value: 0.631
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[0].<DealingEndTransitionTime>k__BackingField
+      value: 0.142
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[1].<DealingEndTransitionTime>k__BackingField
+      value: 0.528
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[2].<DealingEndTransitionTime>k__BackingField
+      value: 0.381
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[0].<DealingStartTransitionTime>k__BackingField
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
+      propertyPath: ComboAttackInfoDatas.Array.data[2].<DealingStartTransitionTime>k__BackingField
+      value: 0.193
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

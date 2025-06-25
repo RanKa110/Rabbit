@@ -19,8 +19,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     [SerializeField] private LayerMask groundLayer;
     //[SerializeField] private TrailRenderer trailRenderer;
 
-    [field:SerializeField] private List<AttackInfoData> comboAttackInfoDatas;
-    [field:SerializeField] private AttackInfoData airAttackInfoData;
     
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
@@ -33,13 +31,15 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private bool _isDashing;
     private bool _isCrouch;
     private bool _attackTriggered;
+    private bool _isAttacking;
     private bool _jumpTriggered;
     private bool _doubleJumpAvailable = true;
 
     private List<IDamageable> _targets = new List<IDamageable>();
 
     private bool _isDead;
-    
+
+    public int ComboIndex = 0;
     public Vector2 MoveInput => _moveInput;
     public bool IsCrouch => _isCrouch;
     public bool IsGrounded =>
@@ -83,6 +83,12 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         set => _attackTriggered = value;
     }
 
+    public bool IsAttacking
+    {
+        get => _isAttacking;
+        set => _isAttacking = value;
+    }
+    
     public StatBase AttackStat { get; private set; }
     public IDamageable Target { get; private set; }
     public Transform Transform  => transform;
@@ -97,6 +103,9 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public Collider2D Collider { get; private set; }
 
     public GameObject HitBox;
+    
+    [field:SerializeField] public List<AttackInfoData> ComboAttackInfoDatas;
+    [field:SerializeField] public AttackInfoData AirAttackInfoData;
 
     protected override void Awake()
     {
@@ -173,7 +182,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
             PlayerState.Fall => new FallState(),
             PlayerState.DoubleJump => new DoubleJumpState(),
             
-            PlayerState.ComboAttack => new ComboAttackState(comboAttackInfoDatas[0]),
+            PlayerState.ComboAttack => new ComboAttackState(),
             
             PlayerState.Dash => new DashState(),
             _ => null
@@ -259,7 +268,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public void AttackAllTargets()
     {
-        
+        _attackTriggered = false;
     }
 
     public override void FindTarget()
