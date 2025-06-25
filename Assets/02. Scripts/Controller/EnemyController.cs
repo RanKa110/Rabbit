@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 //[RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(StatManager))]
@@ -7,6 +8,8 @@ using System;
 
 public class EnemyController : BaseController<EnemyController, EnemyState>, IAttackable, IDamageable
 {
+    // 정적 이벤트 - 어떤 적이든 죽었을 때 발생
+    public static event System.Action<EnemyController> OnAnyEnemyDie;
     private CharacterController _characterController;
     private IDamageable _target;
     private bool _isDead;
@@ -26,8 +29,14 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     public LayerMask playerLayer;
     public float minAttackDistance = 3f;
     
-    [Header("이펙트")]
+    [Header("죽음 이펙트")]
+    public GameObject deathEffectPrefab;
+    public AudioClip deathSound;
     public GameObject hitEffectPrefab;
+    
+    [Header("드롭 아이템")]
+    public List<DropItem> dropItems = new List<DropItem>();
+    public int experienceAmount = 50;
     
     // 컴포넌트
     private Rigidbody2D _rigidbody2D;
@@ -38,6 +47,16 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     public bool IsAttacking { get; set; }
     public bool CanAttack { get; set; } = true;
     public float LastAttackTime { get; set; }
+
+    [System.Serializable]
+    public class DropItem
+    {
+        public GameObject itemPrefab;
+        [Range(0f, 1f)]
+        public float dropChance = 0.5f;
+        public int minAmount = 1;
+        public int maxAmount = 1;
+    }
 
     protected override void Awake()
     {
@@ -205,6 +224,8 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
 
     public void Dead()
     {
+        if (_isDead) return;
+        
         _isDead = true;
         
         // HP바 숨기기
@@ -213,8 +234,11 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
             _healthBar.HideHealthBar();
         }
         
-        // 피격 효과 시작
-        StartCoroutine(DeathEffect());
+        // 정적 이벤트 발생 - 다른 시스템들에게 이 적이 죽었음을 알림
+        OnAnyEnemyDie?.Invoke(this);
+        
+        // 상태를 Die로 변경
+        ChangeState(EnemyState.Die);
     }
 
     public void TakeDamage(IAttackable attacker)
@@ -238,11 +262,11 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         // 피격 효과
         StartCoroutine(HitEffect());
         
-        // HP 체크 (StatManager의 Consume에서 자동으로 Dead()가 호출되지만 상태 변경은 여기서)
+        // HP 체크
         float currentHealth = StatManager.GetValueSafe(StatType.CurHp, 0f);
         if (currentHealth <= 0)
         {
-            ChangeState(EnemyState.Die);
+            Dead();
         }
     }
 
@@ -250,31 +274,70 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     {
         if (_spriteRenderer != null)
         {
+            // 피격 이펙트 생성
+            if (hitEffectPrefab != null)
+            {
+                Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+            }
+            
+            // 색상 변경 효과
             _spriteRenderer.color = Color.red;
             yield return new WaitForSeconds(0.1f);
-            _spriteRenderer.color = Color.white;
+            if (_spriteRenderer != null) // null 체크 (죽음 중일 수 있음)
+            {
+                _spriteRenderer.color = Color.white;
+            }
         }
     }
     
-    private System.Collections.IEnumerator DeathEffect()
+    // 아이템 드롭
+    public void DropItems()
     {
-        if (_spriteRenderer != null)
+        foreach (var dropItem in dropItems)
         {
-            // 페이드 아웃 효과
-            Color originalColor = _spriteRenderer.color;
-            float elapsed = 0f;
-            float duration = 1f;
+            if (dropItem.itemPrefab == null) continue;
             
-            while (elapsed < duration)
+            // 드롭 확률 체크
+            if (UnityEngine.Random.Range(0f, 1f) <= dropItem.dropChance)
             {
-                elapsed += Time.deltaTime;
-                float alpha = Mathf.Lerp(1f, 0f, elapsed / duration);
-                _spriteRenderer.color = new Color(originalColor.r, originalColor.g, originalColor.b, alpha);
-                yield return null;
+                int amount = UnityEngine.Random.Range(dropItem.minAmount, dropItem.maxAmount + 1);
+                
+                for (int i = 0; i < amount; i++)
+                {
+                    // 랜덤한 위치에 아이템 생성
+                    Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * 0.5f;
+                    Vector3 dropPosition = transform.position + new Vector3(randomOffset.x, 0.5f, 0);
+                    
+                    GameObject droppedItem = Instantiate(dropItem.itemPrefab, dropPosition, Quaternion.identity);
+                    
+                    // 아이템에 물리 효과 추가 (튀는 효과)
+                    Rigidbody2D itemRb = droppedItem.GetComponent<Rigidbody2D>();
+                    if (itemRb != null)
+                    {
+                        Vector2 force = new Vector2(
+                            UnityEngine.Random.Range(-2f, 2f),
+                            UnityEngine.Random.Range(3f, 5f)
+                        );
+                        itemRb.AddForce(force, ForceMode2D.Impulse);
+                    }
+                }
             }
+        }
+    }
+    
+    // 경험치 부여
+    public void GiveExperience()
+    {
+        // 플레이어에게 경험치 부여
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            // 플레이어의 경험치 시스템에 경험치 추가
+            // 예: player.GetComponent<PlayerStats>()?.AddExperience(experienceAmount);
+            Debug.Log($"Player gained {experienceAmount} experience!");
             
-            // 완전히 투명해지면 오브젝트 비활성화 또는 삭제
-            gameObject.SetActive(false);
+            // 경험치 획득 이펙트 (선택사항)
+            // 경험치 텍스트 표시 등
         }
     }
 
