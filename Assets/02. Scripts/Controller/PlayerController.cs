@@ -30,8 +30,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private bool _dashTriggered;
     private bool _isDashing;
     private bool _isCrouch;
-    private bool comboAttackTriggered;
-    private bool isComboAttacking;
+    private bool _attackTriggered;
+    private bool _isAttacking;
     private bool _jumpTriggered;
     private bool _doubleJumpAvailable = true;
 
@@ -79,14 +79,26 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public bool ComboAttackTriggered
     {
-        get => comboAttackTriggered;
-        set => comboAttackTriggered = value;
+        get => _attackTriggered && IsGrounded;
+        set => _attackTriggered = value;
     }
 
     public bool IsComboAttacking
     {
-        get => isComboAttacking;
-        set => isComboAttacking = value;
+        get => _isAttacking && IsGrounded;
+        set => _isAttacking = value;
+    }
+
+    public bool AirAttackTriggered
+    {
+        get => _attackTriggered && !IsGrounded;
+        set => _attackTriggered = value;
+    }
+
+    public bool IsAirAttacking
+    {
+        get => _isAttacking && !IsGrounded;
+        set => _isAttacking = value;
     }
     
     public StatBase AttackStat { get; private set; }
@@ -138,7 +150,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         
         action.Jump.started += _ => _jumpTriggered = true;
 
-        action.Attack.started += _ => comboAttackTriggered = true;
+        action.Attack.started += _ => _attackTriggered = true;
     }
 
     protected override void Update()
@@ -186,6 +198,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
             PlayerState.DoubleJump => new DoubleJumpState(),
             
             PlayerState.ComboAttack => new ComboAttackState(),
+            PlayerState.AirAttack => new AirAttackState(),
             
             PlayerState.Dash => new DashState(),
             _ => null
@@ -271,7 +284,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public void AttackAllTargets()
     {
-        comboAttackTriggered = false;
+        _attackTriggered = false;
         FindTarget();
         foreach (var target in _targets)
         {

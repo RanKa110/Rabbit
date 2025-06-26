@@ -104,4 +104,79 @@ namespace PlayerAttackStates
             }
         }
     }
+
+    public class AirAttackState : PlayerAttackState
+    {
+        private AttackInfoData _attackInfoData;
+        private Coroutine _attackCoroutine;
+        private float _time = 0f;
+
+        public override void OnEnter(PlayerController owner)
+        {
+            owner.IsAirAttacking = true;
+            _attackInfoData = owner.AirAttackInfoData;
+            _attackCoroutine = owner.StartCoroutine(DoAttack(owner));
+            Debug.Log(_attackInfoData.AttackName);
+            _time = 0f;
+        }
+
+        protected override IEnumerator DoAttack(PlayerController owner)
+        {
+            Animator animator = owner.Animator;
+            string attackName = _attackInfoData.AttackName;
+
+            yield return new WaitUntil(() =>
+                GetNormalizedTime(animator, attackName) >= _attackInfoData.DealingStartTransitionTime);
+            owner.AttackAllTargets();
+
+            yield return new WaitUntil(() => GetNormalizedTime(animator, attackName) >= 1f);
+
+            owner.IsAirAttacking = false;
+        }
+
+        public override void OnUpdate(PlayerController owner)
+        {
+            _time += Time.deltaTime;
+        }
+
+        public override void OnExit(PlayerController owner)
+        {
+            owner.AirAttackTriggered = false;
+            if (_attackCoroutine != null)
+                owner.StopCoroutine(_attackCoroutine);
+            owner.IsAirAttacking = false;
+            owner.JumpTriggered = false;
+            owner.DashTriggered = false;
+            owner.ComboIndex = 0;
+        }
+
+        public override PlayerState CheckTransition(PlayerController owner)
+        {
+            if (!owner.IsAirAttacking)
+                return PlayerState.Idle;
+
+            return PlayerState.AirAttack;
+        }
+        
+        protected float GetNormalizedTime(Animator animator, string tag)
+        {
+            // 애니메이션 연결할 때 지워야함
+            return _time;
+            AnimatorStateInfo currentInfo = animator.GetCurrentAnimatorStateInfo(0);
+            AnimatorStateInfo nextInfo = animator.GetNextAnimatorStateInfo(0);
+            
+            if (animator.IsInTransition(0) && nextInfo.IsTag(tag))
+            {
+                return nextInfo.normalizedTime;
+            }
+            else if (!animator.IsInTransition(0) && currentInfo.IsTag(tag))
+            {
+                return currentInfo.normalizedTime;
+            }
+            else
+            {
+                return 0f;
+            }
+        }
+    }
 }

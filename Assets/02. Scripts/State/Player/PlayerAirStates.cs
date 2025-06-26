@@ -21,6 +21,9 @@ namespace PlayerAirStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.AirAttackTriggered)
+                return PlayerState.AirAttack;
+            
             if (owner.JumpTriggered && owner.CanDoubleJump)
                 return PlayerState.DoubleJump;
             
@@ -51,6 +54,9 @@ namespace PlayerAirStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.AirAttackTriggered)
+                return PlayerState.AirAttack;
+
             if (owner.JumpTriggered && owner.CanDoubleJump)
                 return PlayerState.DoubleJump;
             
@@ -83,6 +89,9 @@ namespace PlayerAirStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.AirAttackTriggered)
+                return PlayerState.AirAttack;
+
             if (owner.VelocityY < 0)
                 return PlayerState.Fall;
             
