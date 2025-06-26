@@ -960,7 +960,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c8e53e976108c440969d089dd494552, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Data: {fileID: 11400000, guid: da142600cb17f694d9c5fc98dd458bc1, type: 2}
+  _data: {fileID: 0}
   maxBasicGauge: 100
   gaugePerBasicAttack: 35
 --- !u!114 &469497270
@@ -6152,7 +6152,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9397edcb869595c45a963127c6028423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallBlocker: {fileID: 1451395080}
 --- !u!19719996 &1451395083
 TilemapCollider2D:
   m_ObjectHideFlags: 0
@@ -6393,7 +6392,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9397edcb869595c45a963127c6028423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallBlocker: {fileID: 1451395080}
 --- !u!1 &1471584986
 GameObject:
   m_ObjectHideFlags: 0
@@ -7030,7 +7028,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9397edcb869595c45a963127c6028423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallBlocker: {fileID: 1977296255}
 --- !u!1 &1806937290
 GameObject:
   m_ObjectHideFlags: 0
@@ -7492,7 +7489,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9397edcb869595c45a963127c6028423, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wallBlocker: {fileID: 1977296255}
 --- !u!1 &2061812439
 GameObject:
   m_ObjectHideFlags: 0
