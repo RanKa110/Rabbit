@@ -12,8 +12,6 @@ public enum PlayerState
     AirAttack,
     
     Defense,
-    Parrying,
-    Evasion,
     Dash,
     
 }

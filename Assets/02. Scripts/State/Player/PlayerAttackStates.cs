@@ -66,8 +66,8 @@ namespace PlayerAttackStates
             if (!owner.IsComboAttacking)
                 return PlayerState.Idle;
             
-            if (owner.ParryingTriggered)
-                return PlayerState.Parrying;
+            if (owner.IsDefensing && owner.CanDefense)
+                return PlayerState.Defense;
 
             return PlayerState.ComboAttack;
         }

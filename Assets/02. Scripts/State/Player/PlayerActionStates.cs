@@ -1,16 +1,28 @@
+using System.Collections;
 using UnityEngine;
 
 namespace PlayerActionStates
 {
     public class DefenseState : PlayerActionState
     {
+        private float _parryTimer = 0.2f;
+        private bool _parrySuccess = false;
+        private bool _parryDone = false;
+        private Coroutine _parryCoroutine;
         public override void OnEnter(PlayerController owner)
         {
+            Debug.Log("방어");
             owner.StopMoving();
+            _parryCoroutine = owner.StartCoroutine(ParryCoroutine(owner));
         }
 
         public override void OnUpdate(PlayerController owner)
         {
+            if (_parrySuccess)
+            {
+                owner.Parry();
+                _parryDone = true;
+            }
         }
 
         public override void OnExit(PlayerController owner)
@@ -18,62 +30,85 @@ namespace PlayerActionStates
             owner.DashTriggered = false;
             owner.JumpTriggered = false;
             owner.ComboAttackTriggered = false;
+            _parrySuccess = false;
+            _parryDone = false;
+            //owner.StopCoroutine(_parryCoroutine);
+            owner.IsParryingOrDodging = false;
+            owner.StartCoroutine(owner.Defense());
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (_parryDone)
+                return PlayerState.Idle;
+            
             if (owner.IsDefensing)
                 return PlayerState.Defense;
             
             return PlayerState.Idle;
         }
-    }
-    
-    public class ParryingState : PlayerActionState
-    {
-        public override void OnEnter(PlayerController owner)
-        {
-        }
 
-        public override void OnUpdate(PlayerController owner)
+        private IEnumerator ParryCoroutine(PlayerController owner)
         {
-        }
-
-        public override void OnExit(PlayerController owner)
-        {
-            owner.ParryingTriggered = false;
-            owner.DashTriggered = false;
-            owner.JumpTriggered = false;
-            owner.ComboAttackTriggered = false;
-        }
-
-        public override PlayerState CheckTransition(PlayerController owner)
-        {
-            if (owner.IsDefensing)
-                return PlayerState.Defense;
+            Debug.Log("패링 여부 확인 중");
+            owner.IsParryingOrDodging = true;
             
-            return PlayerState.Idle;
+            float timer = 0f;
+            while (timer < _parryTimer)
+            {
+                if (owner.TryParrying())
+                {
+                    _parrySuccess = true;
+                    break;
+                }
+                
+                timer += Time.deltaTime;
+                yield return null;
+            }
+
+            owner.IsParryingOrDodging = false;
+            Debug.Log("패링 불가능");
         }
     }
     
     public class DashState : PlayerActionState
     {
+        private float _dodgeTimer = 0.2f;
+        private bool _dodgeSuccess = false;
+        private bool _dodgeDone = false;
+        private Coroutine _dodgeCoroutine;
         public override void OnEnter(PlayerController owner)
         {
+            _dodgeCoroutine = owner.StartCoroutine(DodgeCoroutine(owner));
             owner.StartCoroutine(owner.Dash());
         }
 
         public override void OnUpdate(PlayerController owner)
         {
+            if (_dodgeSuccess)
+            {
+                owner.Dodge();
+                _dodgeDone = true;
+            }
         }
 
         public override void OnExit(PlayerController owner)
         {
             owner.DashTriggered = false;
+            owner.ComboAttackTriggered = false;
+            owner.AirAttackTriggered = false;
+            owner.IsDefensing = false;
+            _dodgeSuccess = false;
+            _dodgeDone = false;
+            //owner.StopCoroutine(_dodgeCoroutine);
+            owner.IsParryingOrDodging = false;
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (_dodgeDone)
+                return PlayerState.Idle;
+            
             if (owner.IsDashing)
                 return PlayerState.Dash;
 
@@ -85,29 +120,27 @@ namespace PlayerActionStates
 
             return PlayerState.Idle;
         }
-    }
-    
-    public class EvasionState : PlayerActionState
-    {
-        public override void OnEnter(PlayerController owner)
+        
+        private IEnumerator DodgeCoroutine(PlayerController owner)
         {
-            
-        }
+            Debug.Log("회피 가능 여부 확인 중");
+            owner.IsParryingOrDodging = true;
 
-        public override void OnUpdate(PlayerController owner)
-        {
-        }
+            float timer = 0f;
+            while (timer < _dodgeTimer)
+            {
+                if (owner.TryDodging())
+                {
+                    _dodgeSuccess = true;
+                    break;
+                }
+                
+                timer += Time.deltaTime;
+                yield return null;
+            }
 
-        public override void OnExit(PlayerController owner)
-        {
-            owner.DashTriggered = false;
-            owner.JumpTriggered = false;
-            owner.ComboAttackTriggered = false;
-        }
-
-        public override PlayerState CheckTransition(PlayerController owner)
-        {
-            return PlayerState.Idle;
+            owner.IsParryingOrDodging = false;
+            Debug.Log("회피 불가능");
         }
     }
 }
