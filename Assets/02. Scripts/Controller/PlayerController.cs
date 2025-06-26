@@ -75,6 +75,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         InitializePlayerData();
         base.Start();
         BindInput();
+        InitializeAttackStat();
     }
 
     protected override void Update()
@@ -150,6 +151,11 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         action.Defense.started += _ => _parryingTriggered = true;
         
         action.Dash.started += _ => _dashTriggered = true; 
+    }
+
+    private void InitializeAttackStat()
+    {
+        AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
     }
 
     public override void Movement()
