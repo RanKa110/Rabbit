@@ -2,44 +2,53 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Timeline;
 using BossStates;
+using System;
+using Unity.VisualScripting;
 
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(StatManager))]
 [RequireComponent(typeof(StatusEffectManager))]
 [RequireComponent(typeof(Collider2D))]
 
-public class BossController : BaseController<BossController, BossState>, IAttackable, IDamageable
+public class BossController : BaseController<BossController, BossState>, IAttackable, IDamageable, IUnitController, IHasGauge
 {
     [Header("Boss 데이터")]
-    [SerializeField] public BossSO Data;
+    [SerializeField] private BossSO _data;
+    public BossSO Data => _data;
 
-    [Header("기본 공격 게이지")]
+    //  스탯 & 범위
+    public StatBase AttackStat { get; private set; }
+    public float DetectionRange => _data.detectionRange;
+    public float AttackRange => StatManager.GetValueSafe(StatType.AttackRange, 1f);
+    public float MoveSpeed => StatManager.GetValueSafe(StatType.MoveSpeed, 3f);
+    public float AttackCooldown => _data.attackCooldown;
+
+    //  게이지 관련 → 보스가 기본 공격 시 채워지는 게이지
+    [Header("기본 공격 게이지 설정")]
     [SerializeField] private float maxBasicGauge = 100f;
     [SerializeField] private float gaugePerBasicAttack = 35f;
 
-    //  내부 상태
+    //  내부 컴포넌트 참조
     private Rigidbody2D _rb;
     private Collider2D _collider;
     private IDamageable _target;
     private bool _isDead;
 
-    //  서브 시스템
     private GaugeManager _gauge;
+    private MovementHandler _movementHandler;
+    private AttackHandler _attackHandler;
     private DamageReceiver _damageReceiver;
-    private BossMovementHandler _movementHandler;
-    private BossAttackHandler _attackHandler;
+    private AnimationHandler _animationHandler;
 
-    //  외부 노출
+    public MovementHandler MovementHandler => _movementHandler;
+    public AttackHandler AttackHandler => _attackHandler;
+
+    public float GetPatternDelay(int idx) => Data.PatternDelays[idx];
+
+    //  IUnitController
     public bool IsDead => _isDead;
     public Collider2D Collider => _collider;
     public IDamageable Target => _target;
-    public StatBase AttackStat { get; private set; }
-    public float DetectionRange => Data.detectionRange;
-    public BossState CurrentStateKey => CurrentState;
-
-    public float AttackCooldownValue => Data.attackCooldown;
-    public int PatternCount => Data.PatternDelays.Length;
-    public float GetPatternDelay(int idx) => Data.PatternDelays[idx];
 
     protected override void Awake()
     {
@@ -48,26 +57,36 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         _rb = GetComponent<Rigidbody2D>();
         _collider = GetComponent<Collider2D>();
 
-        //  물리 세팅
+        //  Rigidbody2D 세팅
         _rb.linearDamping = 0f;
         _rb.angularDamping = 0f;
         _rb.sleepMode = RigidbodySleepMode2D.NeverSleep;
+
+        //  핸들러 초기화
+        _animationHandler = new AnimationHandler(GetComponent<Animator>());
+        _movementHandler = new MovementHandler(_rb, this);
+        _attackHandler = new AttackHandler(this, () => Target, GetComponent<Animator>());
     }
 
     protected override void Start()
     {
-        base.Start();
+        if (_data == null)
+        {
+            Debug.LogError("Boss SO가 할당되지 않았습니다!");
+            return;
+        }
 
-        BossTable bossTable = TableManager.Instance.GetTable<BossTable>();
-        BossSO bossData = bossTable.GetDataByID(0);
-
-        StatManager.Initialize(bossData, this);
+        //  스탯 초기화
+        StatManager.Initialize(_data, this);
         AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
 
+        //  게이지 매니저
         _gauge = new GaugeManager(maxBasicGauge, gaugePerBasicAttack);
-        _damageReceiver = new DamageReceiver(StatManager, _collider, Data.parryChance, OnBossDeathCoroutine(), this);
-        _movementHandler = new BossMovementHandler(_rb, this);
-        _attackHandler = new BossAttackHandler(_damageReceiver, this, this);
+
+        //  데미지 수신자
+        _damageReceiver = new DamageReceiver(StatManager, this, OnDeathCoroutine(), this);
+
+        base.Start();
     }
 
     protected override void Update()
@@ -89,33 +108,12 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         _ => null
     };
 
-    public override void Movement() => _movementHandler.Chase();
-
-    //  플레이어를 어디서나 바라보도록 하는 메서드
-    public void FaceToTarget()
+    public override void Movement()
     {
-        if (Target == null)
-        {
-            return;
-        }
-
-        Vector2 scale = transform.localScale;
-        float dirX = Target.Collider.bounds.center.x - transform.position.x;
-
-        if (dirX > 0f)
-        {
-            scale.x = Mathf.Abs(scale.x);       //  오른쪽을 바라봄
-        }
-
-        else if (dirX < 0f)
-        {
-            scale.x = -Mathf.Abs(scale.x);      //  왼쪽 바라봄
-        }
-
-        transform.localScale = scale;
+        FaceToTarget();
+        _movementHandler.Chase();
+        SetAnimationMoving(true);
     }
-
-    public void Attack() => StartCoroutine(_attackHandler.BasicAttackCoroutine(_gauge));
 
     public override void FindTarget()
     {
@@ -124,7 +122,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
             return;
         }
 
-        PlayerController player = FindFirstObjectByType<PlayerController>();
+        var player = FindFirstObjectByType<PlayerController>();
 
         if (player != null)
         {
@@ -132,35 +130,47 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         }
     }
 
-    public void TakeDamage(IAttackable attacker)
+    public void Attack()
     {
-        _damageReceiver.TakeDamage(attacker);
+        StartCoroutine(_attackHandler.BasicAttackCoroutine());
     }
 
-    private IEnumerator OnBossDeathCoroutine()
+    public void TakeDamage(IAttackable attacker) => _damageReceiver.TakeDamage(attacker);
+
+    public void Dead() => _isDead = true;
+
+    public void SetAnimationMoving(bool isMoving) => _animationHandler.SetMoveAnimation(isMoving);
+
+    public void SetAnimationAttack() => _animationHandler.PlayAttackAnimation();
+
+    public void SetAnimationDeath() => _animationHandler.PlayDeathAnimation();
+
+    private IEnumerator OnDeathCoroutine()
     {
-        Debug.Log("보스 사망 처리 시작!");
-
-        //  사망 애니메이션, 이펙트, 사운드 등 여기에 삽입할 것!
+        SetAnimationDeath();
         yield return new WaitForSeconds(0.5f);
-
         ChangeState(BossState.Die);
     }
 
+
     public void AddBasicGauge() => _gauge.Add();
+
     public bool IsBasicGaugeFull() => _gauge.IsFull();
+
     public void ResetBasicGauge() => _gauge.Reset();
-
-    public void Dead()
+   
+    public void FaceToTarget()
     {
-    }
-
-    public void RequestEvade()
-    {
-        if (CurrentStateKey != BossState.Evade)
+        if (Target == null)
         {
-            Debug.Log("RequestEvade() 호출 → 상태 전이");
-            ChangeState(BossState.Evade);
+            return;
         }
+
+        var direction = Target.Collider.bounds.center - _collider.bounds.center;
+
+        var rotate = transform.localScale;
+
+        transform.localScale = new Vector2(direction.x >= 0 ? 1 : -1, rotate.y);
     }
+
 }
