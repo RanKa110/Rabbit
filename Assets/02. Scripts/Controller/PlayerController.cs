@@ -33,6 +33,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private bool _jumpTriggered;
     private bool _doubleJumpAvailable = true;
     private bool _isDefensing;
+    private bool _parryingTriggered;
     private bool _isDead;
 
     private List<IDamageable> _targets = new List<IDamageable>();
@@ -50,6 +51,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public bool DashTriggered { get => _dashTriggered; set => _dashTriggered = value; }
     public bool IsDashing { get => _isDashing; set => _isDashing = value; }
     public bool IsDefensing { get => _isDefensing; set => _isDefensing = value; }
+    public bool ParryingTriggered { get => _parryingTriggered; set => _parryingTriggered = value; }
     public bool CanDash { get; set; } = true;
     public bool ComboAttackTriggered { get => _attackTriggered && IsGrounded; set => _attackTriggered = value; }
     public bool IsComboAttacking { get => _isAttacking && IsGrounded; set => _isAttacking = value; }
@@ -144,6 +146,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         
         action.Defense.performed += _ => _isDefensing = true;
         action.Defense.canceled += _ => _isDefensing = false;
+
+        action.Defense.started += _ => _parryingTriggered = true;
         
         action.Dash.started += _ => _dashTriggered = true; 
     }
@@ -207,7 +211,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public IEnumerator Dash()
     {
         CanDash = false;
-        IsDashing = true;
+        _isDashing = true;
 
         float originGravity = _rigidbody2D.gravityScale;
         _rigidbody2D.gravityScale = 0f;
@@ -217,7 +221,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         yield return new WaitForSeconds(0.2f);
 
         _rigidbody2D.gravityScale = originGravity;
-        IsDashing = false;
+        _isDashing = false;
 
         yield return new WaitForSeconds(0.5f);
 

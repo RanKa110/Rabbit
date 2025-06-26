@@ -22,6 +22,9 @@ namespace PlayerGroundStates
             if (owner.ComboAttackTriggered)
                 return PlayerState.ComboAttack;
             
+            if (owner.ParryingTriggered)
+                return PlayerState.Parrying;
+            
             if (owner.JumpTriggered)
                 return PlayerState.Jump;
             
@@ -57,6 +60,9 @@ namespace PlayerGroundStates
         {
             if (owner.ComboAttackTriggered)
                 return PlayerState.ComboAttack;
+            
+            if (owner.ParryingTriggered)
+                return PlayerState.Parrying;
 
             if (owner.VelocityY < 0)
                 return PlayerState.Fall;

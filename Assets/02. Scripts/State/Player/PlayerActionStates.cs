@@ -6,7 +6,7 @@ namespace PlayerActionStates
     {
         public override void OnEnter(PlayerController owner)
         {
-            
+            owner.StopMoving();
         }
 
         public override void OnUpdate(PlayerController owner)
@@ -33,7 +33,6 @@ namespace PlayerActionStates
     {
         public override void OnEnter(PlayerController owner)
         {
-            
         }
 
         public override void OnUpdate(PlayerController owner)
@@ -42,6 +41,7 @@ namespace PlayerActionStates
 
         public override void OnExit(PlayerController owner)
         {
+            owner.ParryingTriggered = false;
             owner.DashTriggered = false;
             owner.JumpTriggered = false;
             owner.ComboAttackTriggered = false;
@@ -49,6 +49,9 @@ namespace PlayerActionStates
 
         public override PlayerState CheckTransition(PlayerController owner)
         {
+            if (owner.IsDefensing)
+                return PlayerState.Defense;
+            
             return PlayerState.Idle;
         }
     }
