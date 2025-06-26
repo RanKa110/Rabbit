@@ -566,10 +566,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 2880282662318319797, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
-      propertyPath: trailRenderer
-      value: 
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

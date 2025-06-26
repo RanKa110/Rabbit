@@ -25,3 +25,11 @@ public abstract class PlayerAttackState : IState<PlayerController, PlayerState>
     public virtual void OnExit(PlayerController owner) { }
     public abstract PlayerState CheckTransition(PlayerController owner);
 }
+
+public abstract class PlayerActionState : IState<PlayerController, PlayerState>
+{
+    public virtual void OnEnter(PlayerController owner) { }
+    public abstract void OnUpdate(PlayerController owner);
+    public virtual void OnExit(PlayerController owner) { }
+    public abstract PlayerState CheckTransition(PlayerController owner);
+}

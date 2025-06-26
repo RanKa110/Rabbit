@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 //[RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(StatManager))]
@@ -7,9 +8,12 @@ using System;
 
 public class EnemyController : BaseController<EnemyController, EnemyState>, IAttackable, IDamageable
 {
+    // 정적 이벤트 - 어떤 적이든 죽었을 때 발생
+    public static event System.Action<EnemyController> OnAnyEnemyDie;
     private CharacterController _characterController;
     private IDamageable _target;
     private bool _isDead;
+    private EnemyHealthBar _healthBar; // HP바 컴포넌트 추가
 
     public bool IsDead => _isDead;
     public Collider2D Collider { get; private set; }
@@ -25,8 +29,14 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     public LayerMask playerLayer;
     public float minAttackDistance = 3f;
     
-    [Header("이펙트")]
+    [Header("죽음 이펙트")]
+    public GameObject deathEffectPrefab;
+    public AudioClip deathSound;
     public GameObject hitEffectPrefab;
+    
+    [Header("드롭 아이템")]
+    public List<DropItem> dropItems = new List<DropItem>();
+    public int experienceAmount = 50;
     
     // 컴포넌트
     private Rigidbody2D _rigidbody2D;
@@ -38,6 +48,16 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     public bool CanAttack { get; set; } = true;
     public float LastAttackTime { get; set; }
 
+    [System.Serializable]
+    public class DropItem
+    {
+        public GameObject itemPrefab;
+        [Range(0f, 1f)]
+        public float dropChance = 0.5f;
+        public int minAmount = 1;
+        public int maxAmount = 1;
+    }
+
     protected override void Awake()
     {
         base.Awake();
@@ -47,6 +67,15 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         _animator = GetComponent<Animator>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
         Collider = GetComponent<Collider2D>();
+        
+        // HP바 컴포넌트 가져오기 또는 추가
+        _healthBar = GetComponent<EnemyHealthBar>();
+        if (_healthBar == null)
+        {
+            _healthBar = gameObject.AddComponent<EnemyHealthBar>();
+            Debug.Log($"{gameObject.name}: EnemyHealthBar component added automatically");
+        }
+        
         StatManager.Initialize(Data, this);
         AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
     }
@@ -54,6 +83,14 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     protected override void Start()
     {
         base.Start();
+        
+        // HP바 초기화
+        if (_healthBar != null)
+        {
+            float maxHp = StatManager.GetValueSafe(StatType.MaxHp, 100f);
+            float curHp = StatManager.GetValueSafe(StatType.CurHp, maxHp);
+            _healthBar.SetHealth(curHp, maxHp);
+        }
     }
 
     protected override void Update()
@@ -84,7 +121,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
             return;
         }
 
-        float speed = StatManager.GetValue(StatType.MoveSpeed);
+        float speed = StatManager.GetValueSafe(StatType.MoveSpeed, 5f);
         Vector3 dir = (_target.Collider.transform.position - transform.position).normalized;
 
         if (_characterController != null && _characterController.enabled)
@@ -102,7 +139,7 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     {
         if (_target == null) return;
 
-        float speed = StatManager.GetValue(StatType.MoveSpeed);
+        float speed = StatManager.GetValueSafe(StatType.MoveSpeed, 5f);
         float distanceToTarget = Vector3.Distance(transform.position, _target.Collider.transform.position);
         
         Vector3 dir;
@@ -187,13 +224,21 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
 
     public void Dead()
     {
+        if (_isDead) return;
+        
         _isDead = true;
         
-        // 애니메이션 트리거
-        if (_animator != null)
+        // HP바 숨기기
+        if (_healthBar != null)
         {
-            _animator.SetTrigger("Death");
+            _healthBar.HideHealthBar();
         }
+        
+        // 정적 이벤트 발생 - 다른 시스템들에게 이 적이 죽었음을 알림
+        OnAnyEnemyDie?.Invoke(this);
+        
+        // 상태를 Die로 변경
+        ChangeState(EnemyState.Die);
     }
 
     public void TakeDamage(IAttackable attacker)
@@ -205,14 +250,23 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
         // HP 감소 (데미지 처리)
         StatManager.Consume(StatType.CurHp, StatModifierType.Base, damage);
         
+        // HP바 업데이트
+        if (_healthBar != null)
+        {
+            float maxHp = StatManager.GetValueSafe(StatType.MaxHp, 100f);
+            float currentHp = StatManager.GetValueSafe(StatType.CurHp, maxHp);
+            _healthBar.SetHealth(currentHp, maxHp);
+            _healthBar.ShowHealthBar(); // 데미지를 받으면 HP바 표시
+        }
+        
         // 피격 효과
         StartCoroutine(HitEffect());
         
-        // HP 체크 (StatManager의 Consume에서 자동으로 Dead()가 호출되지만 상태 변경은 여기서)
-        float currentHealth = StatManager.GetValue(StatType.CurHp);
+        // HP 체크
+        float currentHealth = StatManager.GetValueSafe(StatType.CurHp, 0f);
         if (currentHealth <= 0)
         {
-            ChangeState(EnemyState.Die);
+            Dead();
         }
     }
 
@@ -220,9 +274,70 @@ public class EnemyController : BaseController<EnemyController, EnemyState>, IAtt
     {
         if (_spriteRenderer != null)
         {
+            // 피격 이펙트 생성
+            if (hitEffectPrefab != null)
+            {
+                Instantiate(hitEffectPrefab, transform.position, Quaternion.identity);
+            }
+            
+            // 색상 변경 효과
             _spriteRenderer.color = Color.red;
             yield return new WaitForSeconds(0.1f);
-            _spriteRenderer.color = Color.white;
+            if (_spriteRenderer != null) // null 체크 (죽음 중일 수 있음)
+            {
+                _spriteRenderer.color = Color.white;
+            }
+        }
+    }
+    
+    // 아이템 드롭
+    public void DropItems()
+    {
+        foreach (var dropItem in dropItems)
+        {
+            if (dropItem.itemPrefab == null) continue;
+            
+            // 드롭 확률 체크
+            if (UnityEngine.Random.Range(0f, 1f) <= dropItem.dropChance)
+            {
+                int amount = UnityEngine.Random.Range(dropItem.minAmount, dropItem.maxAmount + 1);
+                
+                for (int i = 0; i < amount; i++)
+                {
+                    // 랜덤한 위치에 아이템 생성
+                    Vector2 randomOffset = UnityEngine.Random.insideUnitCircle * 0.5f;
+                    Vector3 dropPosition = transform.position + new Vector3(randomOffset.x, 0.5f, 0);
+                    
+                    GameObject droppedItem = Instantiate(dropItem.itemPrefab, dropPosition, Quaternion.identity);
+                    
+                    // 아이템에 물리 효과 추가 (튀는 효과)
+                    Rigidbody2D itemRb = droppedItem.GetComponent<Rigidbody2D>();
+                    if (itemRb != null)
+                    {
+                        Vector2 force = new Vector2(
+                            UnityEngine.Random.Range(-2f, 2f),
+                            UnityEngine.Random.Range(3f, 5f)
+                        );
+                        itemRb.AddForce(force, ForceMode2D.Impulse);
+                    }
+                }
+            }
+        }
+    }
+    
+    // 경험치 부여
+    public void GiveExperience()
+    {
+        // 플레이어에게 경험치 부여
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+        {
+            // 플레이어의 경험치 시스템에 경험치 추가
+            // 예: player.GetComponent<PlayerStats>()?.AddExperience(experienceAmount);
+            Debug.Log($"Player gained {experienceAmount} experience!");
+            
+            // 경험치 획득 이펙트 (선택사항)
+            // 경험치 텍스트 표시 등
         }
     }
 

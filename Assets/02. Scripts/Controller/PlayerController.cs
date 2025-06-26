@@ -5,6 +5,7 @@ using System.Linq;
 using PlayerGroundStates;
 using PlayerAirStates;
 using PlayerAttackStates;
+using PlayerActionStates;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -16,104 +17,126 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundCheckRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
-    //[SerializeField] private TrailRenderer trailRenderer;
-    
+
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
     private InputController _inputController;
     private SpriteRenderer _spriteRenderer;
-    
+    private Animator _animator;
+
     private Vector2 _moveInput;
     private bool _dashTriggered;
     private bool _isDashing;
     private bool _isCrouch;
     private bool _attackTriggered;
+    private bool _isAttacking;
     private bool _jumpTriggered;
     private bool _doubleJumpAvailable = true;
+    private bool _isDefensing;
+    private bool _parryingTriggered;
+    private bool _isDead;
 
     private List<IDamageable> _targets = new List<IDamageable>();
+    public int ComboIndex = 0;
+    public GameObject HitBox;
+    [SerializeField] public List<AttackInfoData> ComboAttackInfoDatas;
+    [SerializeField] public AttackInfoData AirAttackInfoData;
 
-    private bool _isDead;
-    
     public Vector2 MoveInput => _moveInput;
     public bool IsCrouch => _isCrouch;
-    public bool IsGrounded =>
-        Physics2D.OverlapCircle(
-            groundCheck.position,
-            groundCheckRadius,
-            groundLayer
-        ) != null;
-    
+    public bool IsGrounded => Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     public float VelocityY => _rigidbody2D.linearVelocity.y;
-
-    public bool JumpTriggered
-    {
-        get => _jumpTriggered;
-        set => _jumpTriggered = value;
-    }
-
-    public bool CanDoubleJump
-    {
-        get => _doubleJumpAvailable;
-        set => _doubleJumpAvailable = value;
-    }
-
-    public bool DashTriggered
-    {
-        get => _dashTriggered;
-        set => _dashTriggered = value;
-    }
-
-    public bool IsDashing
-    {
-        get => _isDashing;
-        set => _isDashing = value;
-    }
-
-    public bool CanDash = true;
-
-    public bool AttackTriggered
-    {
-        get => _attackTriggered;
-        set => _attackTriggered = value;
-    }
-
+    public bool JumpTriggered { get => _jumpTriggered; set => _jumpTriggered = value; }
+    public bool CanDoubleJump { get => _doubleJumpAvailable; set => _doubleJumpAvailable = value; }
+    public bool DashTriggered { get => _dashTriggered; set => _dashTriggered = value; }
+    public bool IsDashing { get => _isDashing; set => _isDashing = value; }
+    public bool IsDefensing { get => _isDefensing; set => _isDefensing = value; }
+    public bool ParryingTriggered { get => _parryingTriggered; set => _parryingTriggered = value; }
+    public bool CanDash { get; set; } = true;
+    public bool ComboAttackTriggered { get => _attackTriggered && IsGrounded; set => _attackTriggered = value; }
+    public bool IsComboAttacking { get => _isAttacking && IsGrounded; set => _isAttacking = value; }
+    public bool AirAttackTriggered { get => _attackTriggered && !IsGrounded; set => _attackTriggered = value; }
+    public bool IsAirAttacking { get => _isAttacking && !IsGrounded; set => _isAttacking = value; }
     public StatBase AttackStat { get; private set; }
     public IDamageable Target { get; private set; }
-    public Transform Transform  => transform;
-
-    public bool IsDead
-    {
-        get => _isDead;
-        private set => _isDead = value;
-    }
-
+    public Transform Transform => transform;
+    public Animator Animator => _animator;
+    public bool IsDead { get => _isDead; private set => _isDead = value; }
     public Collider2D Collider { get; private set; }
 
     protected override void Awake()
     {
         base.Awake();
-        _rigidbody2D = GetComponent<Rigidbody2D>();
-        _boxCollider2D = GetComponent<BoxCollider2D>();
-        _inputController = GetComponent<InputController>();
-        _spriteRenderer = GetComponent<SpriteRenderer>();
-
-        Collider = GetComponent<Collider2D>();
+        InitializeComponents();
     }
 
     protected override void Start()
     {
+        InitializePlayerData();
+        base.Start();
+        BindInput();
+        InitializeAttackStat();
+    }
+
+    protected override void Update()
+    {
+        base.Update();
+        if (_isDashing || IsComboAttacking) return;
+        Rotate();
+    }
+    
+    private void FixedUpdate()
+    {
+        if (_isDashing) return;
+        if (!CanDash) _dashTriggered = false;
+        if (!IsComboAttacking) Movement();
+        if (!IsGrounded) Fall();
+    }
+
+    protected override IState<PlayerController, PlayerState> GetState(PlayerState state)
+    {
+        return state switch
+        {
+            PlayerState.Idle => new IdleState(),
+            PlayerState.Move => new MoveState(),
+
+            PlayerState.Jump => new JumpState(),
+            PlayerState.Fall => new FallState(),
+            PlayerState.DoubleJump => new DoubleJumpState(),
+            
+            PlayerState.ComboAttack => new ComboAttackState(),
+            PlayerState.AirAttack => new AirAttackState(),
+            
+            PlayerState.Defense => new DefenseState(),
+            PlayerState.Parrying => new ParryingState(),
+            PlayerState.Evasion => new EvasionState(),
+            PlayerState.Dash => new DashState(),
+            _ => null
+        };
+    }
+    
+    private void InitializeComponents()
+    {
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+        _boxCollider2D = GetComponent<BoxCollider2D>();
+        _inputController = GetComponent<InputController>();
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        _animator = GetComponent<Animator>();
+        Collider = GetComponent<Collider2D>();
+    }
+
+    private void InitializePlayerData()
+    {
         PlayerTable playerTable = TableManager.Instance.GetTable<PlayerTable>();
         PlayerSO playerData = playerTable.GetDataByID(0);
         StatManager.Initialize(playerData, null);
-        
-        base.Start();
+    }
 
+    private void BindInput()
+    {
         var action = _inputController.PlayerActions;
         action.Move.performed += context => _moveInput = context.ReadValue<Vector2>();
         action.Move.canceled += _ => _moveInput = Vector2.zero;
-
-        action.Dash.started += _ => _dashTriggered = true; 
 
         action.Crouch.performed += _ => _isCrouch = true;
         action.Crouch.canceled += _ => _isCrouch = false; 
@@ -121,53 +144,18 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         action.Jump.started += _ => _jumpTriggered = true;
 
         action.Attack.started += _ => _attackTriggered = true;
-    }
-
-    protected override void Update()
-    {
-        base.Update();
-
-        if (_isDashing)
-            return;
         
-        Rotate();
-    }
-    
-    private void FixedUpdate()
-    {
-        if (_isDashing)
-        {
-            return;
-        }
+        action.Defense.performed += _ => _isDefensing = true;
+        action.Defense.canceled += _ => _isDefensing = false;
 
-        if (!CanDash)
-            _dashTriggered = false;
+        action.Defense.started += _ => _parryingTriggered = true;
         
-        Movement();
-        if (!IsGrounded)
-            Fall();
+        action.Dash.started += _ => _dashTriggered = true; 
     }
 
-    /// <summary>
-    /// 플레이어의 State를 생성해주는 팩토리 입니다.
-    /// </summary>
-    /// <param name="state"></param>
-    /// <returns></returns>
-    protected override IState<PlayerController, PlayerState> GetState(PlayerState state)
+    private void InitializeAttackStat()
     {
-        return state switch
-        {
-            PlayerState.Idle => new IdleState(),
-            PlayerState.Move => new MoveState(),
-            PlayerState.Dash => new DashState(),
-
-            PlayerState.Jump => new JumpState(),
-            PlayerState.Fall => new FallState(),
-            PlayerState.DoubleJump => new DoubleJumpState(),
-            
-            PlayerState.Attack => new AttackState(1, 1),
-            _ => null
-        };
+        AttackStat = StatManager.GetStat<CalculatedStat>(StatType.AttackPow);
     }
 
     public override void Movement()
@@ -179,10 +167,24 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public void Rotate()
     {
-        if (MoveInput.x > 0.01f)
+        const float moveThreshold = 0.01f;
+        if (_moveInput.x > moveThreshold)
+        {
             _spriteRenderer.flipX = false;
-        else if (MoveInput.x < -0.01f)
+            SetHitBoxPosition(1f);
+        }
+        else
+        {
             _spriteRenderer.flipX = true;
+            SetHitBoxPosition(-1f);
+        }
+    }
+    
+    private void SetHitBoxPosition(float xPosition)
+    {
+        Vector3 pos = HitBox.transform.localPosition;
+        pos.x = xPosition;
+        HitBox.transform.localPosition = pos;
     }
 
     public void Fall()
@@ -215,7 +217,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public IEnumerator Dash()
     {
         CanDash = false;
-        IsDashing = true;
+        _isDashing = true;
 
         float originGravity = _rigidbody2D.gravityScale;
         _rigidbody2D.gravityScale = 0f;
@@ -225,9 +227,9 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         yield return new WaitForSeconds(0.2f);
 
         _rigidbody2D.gravityScale = originGravity;
-        IsDashing = false;
+        _isDashing = false;
 
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(0.5f);
 
         CanDash = true;
     }
@@ -239,12 +241,23 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public void AttackAllTargets()
     {
-        
+        _attackTriggered = false;
+        FindTarget();
+        foreach (var target in _targets)
+        {
+            Target = target;
+            Attack();
+        }
     }
 
     public override void FindTarget()
     {
-        
+        _targets = HitBox.GetComponent<DamageableSensor>().Damageables;
+    }
+
+    public void StopMoving()
+    {
+        _rigidbody2D.linearVelocity = new Vector2(0f, _rigidbody2D.linearVelocity.y);
     }
     
 
