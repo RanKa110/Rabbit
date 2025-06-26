@@ -34,5 +34,7 @@ public class AttackHandler
         }
 
         yield return new WaitForSeconds(postDelay);
+
+        _animator.ResetTrigger("Attack");
     }
 }

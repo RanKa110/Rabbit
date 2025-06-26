@@ -28,6 +28,10 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     [SerializeField] private float maxBasicGauge = 100f;
     [SerializeField] private float gaugePerBasicAttack = 35f;
 
+    //  이동 잠금용 플래그
+    private bool _canMove = true;
+    public bool CanMove => _canMove;
+
     //  내부 컴포넌트 참조
     private Rigidbody2D _rb;
     private Collider2D _collider;
@@ -110,10 +114,19 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
     public override void Movement()
     {
+        //  공격 중에는 이동하지 않도록!
+        if (!CanMove)
+        {
+            SetAnimationMoving(false);
+            return;
+        }
+
         FaceToTarget();
         _movementHandler.Chase();
         SetAnimationMoving(true);
     }
+
+    public void SetCanMove(bool value) => _canMove = value;
 
     public override void FindTarget()
     {
@@ -172,5 +185,4 @@ public class BossController : BaseController<BossController, BossState>, IAttack
 
         transform.localScale = new Vector2(direction.x >= 0 ? 1 : -1, rotate.y);
     }
-
 }

@@ -106,9 +106,15 @@ namespace BossStates
         {
             Debug.Log("보스 공격 상태 진입!");
 
+            //  공격 시작 직전까지 추격 / 이동 잠금
+            owner.SetCanMove(false);
+            owner.MovementHandler.StopXMovement();
             owner.SetAnimationMoving(false);
+
+            //  플레이어를 바라보는건 유지
             owner.FaceToTarget();
-            _attackDone = true;
+
+            _attackDone = false;
             owner.StartCoroutine(DoAttack(owner));
         }
 
@@ -129,7 +135,8 @@ namespace BossStates
 
         public void OnExit(BossController owner)
         {
-            owner.SetAnimationMoving(false);
+            owner.SetCanMove(true);
+            owner.SetAnimationMoving(true);
         }
 
         public BossState CheckTransition(BossController owner)
@@ -193,13 +200,17 @@ namespace BossStates
 
         public void OnEnter(BossController owner)
         {
+            //  공격 시작 직전까지 추격 / 이동 잠금
+            owner.SetCanMove(false);
+            owner.MovementHandler.StopXMovement();
+
             _timer = 0f;
             _patternStarted = false;
             owner.SetAnimationMoving(false);
 
             Debug.Log($"패턴 {_index + 1} 상태 진입!");
 
-            //  TODO: 여기에 패턴 로직을 추가해야 합니다.
+            //  TODO: 여기에 패턴 로직을 추가할 예정
         }
 
         public void OnUpdate(BossController owner)
@@ -216,13 +227,16 @@ namespace BossStates
         private IEnumerator RunPattern(BossController owner)
         {
             //  여기에 실제 패턴 공격 로직 삽입할 것
-            yield return new WaitForSeconds(0.5f);      //  예시용 준비 시간
+            yield return new WaitForSeconds(0.5f);     
             Debug.Log($"패턴 {_index + 1} 실행 중..");
         }
 
-        public void OnExit(BossController entity)
+        public void OnExit(BossController owner)
         {
             Debug.Log($"패턴 {_index + 1} 상태 종료!");
+
+            owner.SetCanMove(true);
+            owner.SetAnimationMoving(true);
         }
 
         public BossState CheckTransition(BossController owner)
