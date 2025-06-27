@@ -12,17 +12,18 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(BoxCollider2D))]
 [RequireComponent(typeof(InputController))]
+[RequireComponent(typeof(PlayerAnimation))]
 public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable, IDamageable
 {
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundCheckRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private PlayerAnimation playerAnimation;
 
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
     private InputController _inputController;
     private SpriteRenderer _spriteRenderer;
-    private Animator _animator;
 
     private Vector2 _moveInput;
     private bool _dashTriggered;
@@ -61,7 +62,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public StatBase AttackStat { get; private set; }
     public IDamageable Target { get; private set; }
     public Transform Transform => transform;
-    public Animator Animator => _animator;
+    public PlayerAnimation PlayerAnimation => playerAnimation;
     public bool IsDead { get => _isDead; private set => _isDead = value; }
     public Collider2D Collider { get; private set; }
 
@@ -120,7 +121,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         _boxCollider2D = GetComponent<BoxCollider2D>();
         _inputController = GetComponent<InputController>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        _animator = GetComponent<Animator>();
+        playerAnimation = GetComponent<PlayerAnimation>();
         Collider = GetComponent<Collider2D>();
     }
 

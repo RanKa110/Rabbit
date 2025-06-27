@@ -2,7 +2,6 @@ public enum PlayerState
 {
     Idle,
     Move,
-    Crouch,
     
     Jump,
     Fall,
