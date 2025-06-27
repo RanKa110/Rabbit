@@ -11,6 +11,7 @@ namespace PlayerActionStates
         private Coroutine _parryCoroutine;
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.DefenseParameterHash, true);
             Debug.Log("방어");
             owner.StopMoving();
@@ -37,6 +38,7 @@ namespace PlayerActionStates
             //owner.StopCoroutine(_parryCoroutine);
             owner.IsParryingOrDodging = false;
             owner.StartCoroutine(owner.Defense());
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -81,6 +83,7 @@ namespace PlayerActionStates
         private Coroutine _dodgeCoroutine;
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.DashParameterHash, true);
             _dodgeCoroutine = owner.StartCoroutine(DodgeCoroutine(owner));
             owner.StartCoroutine(owner.Dash());
@@ -106,6 +109,7 @@ namespace PlayerActionStates
             _dodgeDone = false;
             //owner.StopCoroutine(_dodgeCoroutine);
             owner.IsParryingOrDodging = false;
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)

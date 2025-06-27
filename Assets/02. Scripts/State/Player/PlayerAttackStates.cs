@@ -9,10 +9,10 @@ namespace PlayerAttackStates
         private AttackInfoData _attackInfoData;
         private Coroutine _attackCoroutine;
         private bool _alreadyAppliedCombo;
-        private float timer = 0f;
 
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.ComboAttackParameterHash, true);
             owner.IsComboAttacking = true;
             owner.StopMoving();
@@ -50,7 +50,6 @@ namespace PlayerAttackStates
 
         public override void OnUpdate(PlayerController owner)
         {
-            timer +=  Time.deltaTime;
             TryComboAttack(owner);
         }
 
@@ -63,7 +62,7 @@ namespace PlayerAttackStates
             owner.IsComboAttacking = false;
             owner.JumpTriggered = false;
             owner.DashTriggered = false;
-            timer = 0f;
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -90,37 +89,16 @@ namespace PlayerAttackStates
                 owner.ComboAttackTriggered = false;
             }
         }
-        
-        protected float GetNormalizedTime(Animator animator, string tag)
-        {
-            return timer;
-            // 애니메이션 연결 시 지워야함
-            AnimatorStateInfo currentInfo = animator.GetCurrentAnimatorStateInfo(0);
-            AnimatorStateInfo nextInfo = animator.GetNextAnimatorStateInfo(0);
-            
-            if (animator.IsInTransition(0) && nextInfo.IsTag(tag))
-            {
-                return nextInfo.normalizedTime;
-            }
-            else if (!animator.IsInTransition(0) && currentInfo.IsTag(tag))
-            {
-                return currentInfo.normalizedTime;
-            }
-            else
-            {
-                return 0f;
-            }
-        }
     }
 
     public class AirAttackState : PlayerAttackState
     {
         private AttackInfoData _attackInfoData;
         private Coroutine _attackCoroutine;
-        private float timer = 0f;
 
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.AirAttackParameterHash, true);
             owner.IsAirAttacking = true;
             _attackInfoData = owner.AirAttackInfoData;
@@ -144,7 +122,6 @@ namespace PlayerAttackStates
 
         public override void OnUpdate(PlayerController owner)
         {
-            timer +=  Time.deltaTime;
         }
 
         public override void OnExit(PlayerController owner)
@@ -157,7 +134,7 @@ namespace PlayerAttackStates
             owner.JumpTriggered = false;
             owner.DashTriggered = false;
             owner.ComboIndex = 0;
-            timer = 0f;
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -166,27 +143,6 @@ namespace PlayerAttackStates
                 return PlayerState.Idle;
 
             return PlayerState.AirAttack;
-        }
-        
-        protected float GetNormalizedTime(Animator animator, string tag)
-        {
-            return timer;
-            // 애니메이션 연결 시 지워야함
-            AnimatorStateInfo currentInfo = animator.GetCurrentAnimatorStateInfo(0);
-            AnimatorStateInfo nextInfo = animator.GetNextAnimatorStateInfo(0);
-            
-            if (animator.IsInTransition(0) && nextInfo.IsTag(tag))
-            {
-                return nextInfo.normalizedTime;
-            }
-            else if (!animator.IsInTransition(0) && currentInfo.IsTag(tag))
-            {
-                return currentInfo.normalizedTime;
-            }
-            else
-            {
-                return 0f;
-            }
         }
     }
 }

@@ -7,6 +7,8 @@ namespace PlayerGroundStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.IdleParameterHash, true);
         }
 
         public override void OnUpdate(PlayerController owner)
@@ -15,6 +17,8 @@ namespace PlayerGroundStates
 
         public override void OnExit(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.IdleParameterHash, false);
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -45,6 +49,7 @@ namespace PlayerGroundStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.MoveParameterHash, true);
             owner.CanDoubleJump = true;
         }
@@ -56,6 +61,7 @@ namespace PlayerGroundStates
         public override void OnExit(PlayerController owner)
         {
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.MoveParameterHash, false);
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)

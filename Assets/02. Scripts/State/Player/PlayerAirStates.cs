@@ -6,6 +6,7 @@ namespace PlayerAirStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.JumpParameterHash, true);
             owner.Jump();
             owner.CanDoubleJump = true;
@@ -19,6 +20,7 @@ namespace PlayerAirStates
         {
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.JumpParameterHash, false);
             owner.JumpTriggered = false;
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -46,6 +48,7 @@ namespace PlayerAirStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.FallParameterHash, true);
         }
 
@@ -57,6 +60,7 @@ namespace PlayerAirStates
         {
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.FallParameterHash, false);
             owner.JumpTriggered = false;
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -84,6 +88,7 @@ namespace PlayerAirStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.DoubleJumpParameterHash, true);
             owner.Jump();
             owner.CanDoubleJump = false;
@@ -97,6 +102,7 @@ namespace PlayerAirStates
         {
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.DoubleJumpParameterHash, false);
             owner.JumpTriggered = false;
+            base.OnExit(owner);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
