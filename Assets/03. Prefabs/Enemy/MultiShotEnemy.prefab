@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 1820667556925250539}
   - component: {fileID: 8356445897308578140}
   - component: {fileID: 1287045405643346012}
+  - component: {fileID: 4328643472067649934}
   m_Layer: 6
   m_Name: MultiShotEnemy
   m_TagString: Enemy
@@ -132,8 +133,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.010204083, y: 0.0051020323}
-  m_Size: {x: 0.12244903, y: 0.12244903}
+  m_Offset: {x: 0.010204083, y: -0.011591411}
+  m_Size: {x: 0.12244903, y: 0.2043985}
   m_Direction: 0
 --- !u!212 &3957991378622921465
 SpriteRenderer:
@@ -311,3 +312,31 @@ MonoBehaviour:
   defaultColor: {r: 0, g: 1, b: 0, a: 1}
   midColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   lowColor: {r: 1, g: 0, b: 0, a: 1}
+--- !u!114 &4328643472067649934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7083902188644727497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 43673caaedd00084cbfe3a513e233ad4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 1
+  currentHealth: 0
+  moveSpeed: 2
+  attackDamage: 10
+  attackCooldown: 1
+  detectionRange: 10
+  attackRange: 2
+  currentState: 0
+  projectilePrefab: {fileID: 7016860977793892785, guid: cfe2642e3a538a141b5c316ac50649fd, type: 3}
+  firePoint: {fileID: 3506701403373076833}
+  projectileSpeed: 10
+  minAttackDistance: 4
+  projectileCount: 5
+  spreadAngle: 60
+  useRandomSpread: 0
+  shotPattern: 4

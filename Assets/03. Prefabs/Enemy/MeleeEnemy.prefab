@@ -48,13 +48,14 @@ GameObject:
   - component: {fileID: 5802482773544262730}
   - component: {fileID: 6528571585439125507}
   - component: {fileID: 17406046109936022}
+  - component: {fileID: 6569492814071551737}
   m_Layer: 6
   m_Name: MeleeEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4148230105435064857
 Transform:
   m_ObjectHideFlags: 0
@@ -255,7 +256,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   minAttackDistance: 3
+  deathEffectPrefab: {fileID: 0}
+  deathSound: {fileID: 0}
   hitEffectPrefab: {fileID: 5046881502283555390, guid: c358351990a7d7c46a195f6be7092695, type: 3}
+  dropItems: []
+  experienceAmount: 50
 --- !u!114 &17406046109936022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -281,3 +286,54 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 8
+--- !u!114 &6569492814071551737
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5393587147841571617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 36e71bcfd5658f544939076c088d0c8c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healthBarPrefab: {fileID: 7124722410306741317, guid: 7751d4c25cb67674fa9b1af4cd2aed2a, type: 3}
+  worldOffset: {x: 0, y: 0.3, z: 0}
+  screenOffset: {x: 0, y: 50}
+  hideWhenFull: 0
+  hideDelay: 3
+  healthBarSize: {x: 100, y: 15}
+  healthGradient:
+    serializedVersion: 2
+    key0: {r: 0.8392157, g: 0.40367532, b: 0.38039216, a: 1}
+    key1: {r: 0.40775186, g: 0.7264151, b: 0.4617303, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  defaultColor: {r: 0, g: 1, b: 0, a: 1}
+  midColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  lowColor: {r: 1, g: 0, b: 0, a: 1}
