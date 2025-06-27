@@ -17,7 +17,6 @@ GameObject:
   - component: {fileID: 7216635425183296736}
   - component: {fileID: 3405123027388337283}
   - component: {fileID: 4049579217143121636}
-  - component: {fileID: 5435308959590151219}
   m_Layer: 6
   m_Name: HomingEnemy
   m_TagString: Enemy
@@ -242,7 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 152a13b62d04c5b4cb119f16a6cc211e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 1
   currentHealth: 0
   moveSpeed: 2
   attackDamage: 10
@@ -253,57 +252,6 @@ MonoBehaviour:
   homingProjectilePrefab: {fileID: 7804515417108403332, guid: b97e6088875bc574d9427c0e73507d6b, type: 3}
   firePoint: {fileID: 3646356536957988663}
   minAttackDistance: 5
---- !u!114 &5435308959590151219
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 544841200907268850}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36e71bcfd5658f544939076c088d0c8c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  healthBarPrefab: {fileID: 7124722410306741317, guid: 7751d4c25cb67674fa9b1af4cd2aed2a, type: 3}
-  worldOffset: {x: 0, y: 0.3, z: 0}
-  screenOffset: {x: 0, y: 50}
-  hideWhenFull: 0
-  hideDelay: 3
-  healthBarSize: {x: 100, y: 15}
-  healthGradient:
-    serializedVersion: 2
-    key0: {r: 0.8392157, g: 0.40367532, b: 0.38039216, a: 1}
-    key1: {r: 0.40775186, g: 0.7264151, b: 0.4617303, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  defaultColor: {r: 0, g: 1, b: 0, a: 1}
-  midColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  lowColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &9121734316225061334
 GameObject:
   m_ObjectHideFlags: 0
