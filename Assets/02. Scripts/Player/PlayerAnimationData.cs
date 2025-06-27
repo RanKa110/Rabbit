@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [Serializable]
 public class PlayerAnimationData
@@ -25,8 +26,8 @@ public class PlayerAnimationData
     [Header("Action")]
     [SerializeField] private string actionParameterName = "@Action";
     [SerializeField] private string defenseParameterName = "Defense";
-    [SerializeField] private string parryingParameterName = "Parrying";
-    [SerializeField] private string evasionParameterName = "Evasion";
+    [SerializeField] private string parryParameterName = "Parry";
+    [SerializeField] private string dodgeParameterName = "Dodge";
     [SerializeField] private string dashParameterName = "Dash";
     
     public int GroundParameterHash { get; private set; }
@@ -41,8 +42,8 @@ public class PlayerAnimationData
     public int AirAttackParameterHash { get; private set; }
     public int ActionParameterHash { get; private set; }
     public int DefenseParameterHash { get; private set; }
-    public int ParryingParameterHash { get; private set; }
-    public int EvasionParameterHash { get; private set; }
+    public int ParryParameterHash { get; private set; }
+    public int DodgeParameterHash { get; private set; }
     public int DashParameterHash { get; private set; }
 
     public void Initialize()
@@ -62,8 +63,8 @@ public class PlayerAnimationData
 
         ActionParameterHash = Animator.StringToHash(actionParameterName);
         DefenseParameterHash = Animator.StringToHash(defenseParameterName);
-        ParryingParameterHash = Animator.StringToHash(parryingParameterName);
-        EvasionParameterHash = Animator.StringToHash(evasionParameterName);
+        ParryParameterHash = Animator.StringToHash(parryParameterName);
+        DodgeParameterHash = Animator.StringToHash(dodgeParameterName);
         DashParameterHash = Animator.StringToHash(dashParameterName);
 
     }

@@ -12,17 +12,18 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(BoxCollider2D))]
 [RequireComponent(typeof(InputController))]
+[RequireComponent(typeof(PlayerAnimation))]
 public class PlayerController : BaseController<PlayerController, PlayerState>, IAttackable, IDamageable
 {
     [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundCheckRadius = 0.1f;
     [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private PlayerAnimation playerAnimation;
 
     private Rigidbody2D _rigidbody2D;
     private BoxCollider2D _boxCollider2D;
     private InputController _inputController;
     private SpriteRenderer _spriteRenderer;
-    private Animator _animator;
 
     private Vector2 _moveInput;
     private bool _dashTriggered;
@@ -33,8 +34,8 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     private bool _jumpTriggered;
     private bool _doubleJumpAvailable = true;
     private bool _isDefensing;
-    private bool _parryingTriggered;
     private bool _isDead;
+    private bool _tookDamage = false;
 
     private List<IDamageable> _targets = new List<IDamageable>();
     public int ComboIndex = 0;
@@ -51,16 +52,17 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public bool DashTriggered { get => _dashTriggered; set => _dashTriggered = value; }
     public bool IsDashing { get => _isDashing; set => _isDashing = value; }
     public bool IsDefensing { get => _isDefensing; set => _isDefensing = value; }
-    public bool ParryingTriggered { get => _parryingTriggered; set => _parryingTriggered = value; }
     public bool CanDash { get; set; } = true;
+    public bool CanDefense { get; set; } = true;
     public bool ComboAttackTriggered { get => _attackTriggered && IsGrounded; set => _attackTriggered = value; }
     public bool IsComboAttacking { get => _isAttacking && IsGrounded; set => _isAttacking = value; }
     public bool AirAttackTriggered { get => _attackTriggered && !IsGrounded; set => _attackTriggered = value; }
     public bool IsAirAttacking { get => _isAttacking && !IsGrounded; set => _isAttacking = value; }
+    public bool IsParryingOrDodging { get; set; } = false;
     public StatBase AttackStat { get; private set; }
     public IDamageable Target { get; private set; }
     public Transform Transform => transform;
-    public Animator Animator => _animator;
+    public PlayerAnimation PlayerAnimation => playerAnimation;
     public bool IsDead { get => _isDead; private set => _isDead = value; }
     public Collider2D Collider { get; private set; }
 
@@ -108,8 +110,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
             PlayerState.AirAttack => new AirAttackState(),
             
             PlayerState.Defense => new DefenseState(),
-            PlayerState.Parrying => new ParryingState(),
-            PlayerState.Evasion => new EvasionState(),
             PlayerState.Dash => new DashState(),
             _ => null
         };
@@ -121,7 +121,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         _boxCollider2D = GetComponent<BoxCollider2D>();
         _inputController = GetComponent<InputController>();
         _spriteRenderer = GetComponent<SpriteRenderer>();
-        _animator = GetComponent<Animator>();
+        playerAnimation = GetComponent<PlayerAnimation>();
         Collider = GetComponent<Collider2D>();
     }
 
@@ -147,8 +147,6 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         
         action.Defense.performed += _ => _isDefensing = true;
         action.Defense.canceled += _ => _isDefensing = false;
-
-        action.Defense.started += _ => _parryingTriggered = true;
         
         action.Dash.started += _ => _dashTriggered = true; 
     }
@@ -173,7 +171,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
             _spriteRenderer.flipX = false;
             SetHitBoxPosition(1f);
         }
-        else
+        else if (_moveInput.x < -moveThreshold)
         {
             _spriteRenderer.flipX = true;
             SetHitBoxPosition(-1f);
@@ -234,6 +232,13 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         CanDash = true;
     }
 
+    public IEnumerator Defense()
+    {
+        CanDefense = false;
+        yield return new WaitForSeconds(0.5f);
+        CanDefense = true;
+    }
+
     public void Attack()
     {
         Target?.TakeDamage(this);
@@ -259,7 +264,20 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     {
         _rigidbody2D.linearVelocity = new Vector2(0f, _rigidbody2D.linearVelocity.y);
     }
-    
+
+    public void Parry()
+    {
+        Debug.Log("Parry");
+    }
+
+    public bool TryParrying() => _tookDamage;
+
+    public void Dodge()
+    {
+        Debug.Log("Dodge");
+    }
+
+    public bool TryDodging() => _tookDamage;
 
     private void LockCursor()
     {
@@ -269,6 +287,12 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
 
     public void TakeDamage(IAttackable attacker)
     {
+        if (IsParryingOrDodging)
+        {
+            _tookDamage = true;
+            return;
+        }
+        
         Debug.Log("Player ▶ TakeDamage()");
     }
 

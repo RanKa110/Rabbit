@@ -9,22 +9,25 @@ namespace PlayerAttackStates
         private AttackInfoData _attackInfoData;
         private Coroutine _attackCoroutine;
         private bool _alreadyAppliedCombo;
-        private float _time = 0f;
+        private float timer = 0f;
 
         public override void OnEnter(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.ComboAttackParameterHash, true);
             owner.IsComboAttacking = true;
             owner.StopMoving();
+            
             _alreadyAppliedCombo = false;
             _attackInfoData = owner.ComboAttackInfoDatas[owner.ComboIndex];
             _attackCoroutine = owner.StartCoroutine(DoAttack(owner));
             Debug.Log(_attackInfoData.AttackName);
-            _time = 0f;
+            
+            owner.PlayerAnimation.Animator.SetInteger("Combo", owner.ComboIndex);
         }
 
         protected override IEnumerator DoAttack(PlayerController owner)
         {
-            Animator animator = owner.Animator;
+            Animator animator = owner.PlayerAnimation.Animator;
             string attackName = _attackInfoData.AttackName;
 
             yield return new WaitUntil(() =>
@@ -47,18 +50,20 @@ namespace PlayerAttackStates
 
         public override void OnUpdate(PlayerController owner)
         {
-            _time += Time.deltaTime;
+            timer +=  Time.deltaTime;
             TryComboAttack(owner);
         }
 
         public override void OnExit(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.ComboAttackParameterHash, false);
             owner.ComboAttackTriggered = false;
             if (_attackCoroutine != null)
                 owner.StopCoroutine(_attackCoroutine);
             owner.IsComboAttacking = false;
             owner.JumpTriggered = false;
             owner.DashTriggered = false;
+            timer = 0f;
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -66,16 +71,30 @@ namespace PlayerAttackStates
             if (!owner.IsComboAttacking)
                 return PlayerState.Idle;
             
-            if (owner.ParryingTriggered)
-                return PlayerState.Parrying;
+            if (owner.IsDefensing && owner.CanDefense)
+                return PlayerState.Defense;
 
             return PlayerState.ComboAttack;
         }
         
+        private void TryComboAttack(PlayerController owner)
+        {
+            if (_alreadyAppliedCombo) return;
+            if (_attackInfoData.ComboStateIndex == -1) return;
+            if (!owner.IsComboAttacking) return;
+
+            if (owner.ComboAttackTriggered && GetNormalizedTime(owner.PlayerAnimation.Animator, _attackInfoData.AttackName) >=
+                _attackInfoData.ComboTransitionTime)
+            {
+                _alreadyAppliedCombo = true;
+                owner.ComboAttackTriggered = false;
+            }
+        }
+        
         protected float GetNormalizedTime(Animator animator, string tag)
         {
-            // 애니메이션 연결할 때 지워야함
-            return _time;
+            return timer;
+            // 애니메이션 연결 시 지워야함
             AnimatorStateInfo currentInfo = animator.GetCurrentAnimatorStateInfo(0);
             AnimatorStateInfo nextInfo = animator.GetNextAnimatorStateInfo(0);
             
@@ -92,40 +111,26 @@ namespace PlayerAttackStates
                 return 0f;
             }
         }
-        
-        private void TryComboAttack(PlayerController owner)
-        {
-            if (_alreadyAppliedCombo) return;
-            if (_attackInfoData.ComboStateIndex == -1) return;
-            if (!owner.IsComboAttacking) return;
-
-            if (owner.ComboAttackTriggered && GetNormalizedTime(owner.Animator, _attackInfoData.AttackName) >=
-                _attackInfoData.ComboTransitionTime)
-            {
-                _alreadyAppliedCombo = true;
-                owner.ComboAttackTriggered = false;
-            }
-        }
     }
 
     public class AirAttackState : PlayerAttackState
     {
         private AttackInfoData _attackInfoData;
         private Coroutine _attackCoroutine;
-        private float _time = 0f;
+        private float timer = 0f;
 
         public override void OnEnter(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.AirAttackParameterHash, true);
             owner.IsAirAttacking = true;
             _attackInfoData = owner.AirAttackInfoData;
             _attackCoroutine = owner.StartCoroutine(DoAttack(owner));
             Debug.Log(_attackInfoData.AttackName);
-            _time = 0f;
         }
 
         protected override IEnumerator DoAttack(PlayerController owner)
         {
-            Animator animator = owner.Animator;
+            Animator animator = owner.PlayerAnimation.Animator;
             string attackName = _attackInfoData.AttackName;
 
             yield return new WaitUntil(() =>
@@ -139,11 +144,12 @@ namespace PlayerAttackStates
 
         public override void OnUpdate(PlayerController owner)
         {
-            _time += Time.deltaTime;
+            timer +=  Time.deltaTime;
         }
 
         public override void OnExit(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.AirAttackParameterHash, false);
             owner.AirAttackTriggered = false;
             if (_attackCoroutine != null)
                 owner.StopCoroutine(_attackCoroutine);
@@ -151,6 +157,7 @@ namespace PlayerAttackStates
             owner.JumpTriggered = false;
             owner.DashTriggered = false;
             owner.ComboIndex = 0;
+            timer = 0f;
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -163,8 +170,8 @@ namespace PlayerAttackStates
         
         protected float GetNormalizedTime(Animator animator, string tag)
         {
-            // 애니메이션 연결할 때 지워야함
-            return _time;
+            return timer;
+            // 애니메이션 연결 시 지워야함
             AnimatorStateInfo currentInfo = animator.GetCurrentAnimatorStateInfo(0);
             AnimatorStateInfo nextInfo = animator.GetNextAnimatorStateInfo(0);
             

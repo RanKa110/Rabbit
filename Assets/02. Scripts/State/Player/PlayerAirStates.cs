@@ -6,6 +6,7 @@ namespace PlayerAirStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.JumpParameterHash, true);
             owner.Jump();
             owner.CanDoubleJump = true;
         }
@@ -16,6 +17,7 @@ namespace PlayerAirStates
 
         public override void OnExit(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.JumpParameterHash, false);
             owner.JumpTriggered = false;
         }
 
@@ -24,8 +26,8 @@ namespace PlayerAirStates
             if (owner.AirAttackTriggered)
                 return PlayerState.AirAttack;
             
-            if (owner.ParryingTriggered)
-                return PlayerState.Parrying;
+            if (owner.IsDefensing && owner.CanDefense)
+                return PlayerState.Defense;
             
             if (owner.JumpTriggered && owner.CanDoubleJump)
                 return PlayerState.DoubleJump;
@@ -44,6 +46,7 @@ namespace PlayerAirStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.FallParameterHash, true);
         }
 
         public override void OnUpdate(PlayerController owner)
@@ -52,6 +55,7 @@ namespace PlayerAirStates
 
         public override void OnExit(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.FallParameterHash, false);
             owner.JumpTriggered = false;
         }
 
@@ -60,8 +64,8 @@ namespace PlayerAirStates
             if (owner.AirAttackTriggered)
                 return PlayerState.AirAttack;
             
-            if (owner.ParryingTriggered)
-                return PlayerState.Parrying;
+            if (owner.IsDefensing && owner.CanDefense)
+                return PlayerState.Defense;
 
             if (owner.JumpTriggered && owner.CanDoubleJump)
                 return PlayerState.DoubleJump;
@@ -80,6 +84,7 @@ namespace PlayerAirStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.DoubleJumpParameterHash, true);
             owner.Jump();
             owner.CanDoubleJump = false;
         }
@@ -90,6 +95,7 @@ namespace PlayerAirStates
 
         public override void OnExit(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.DoubleJumpParameterHash, false);
             owner.JumpTriggered = false;
         }
 
@@ -98,8 +104,8 @@ namespace PlayerAirStates
             if (owner.AirAttackTriggered)
                 return PlayerState.AirAttack;
             
-            if (owner.ParryingTriggered)
-                return PlayerState.Parrying;
+            if (owner.IsDefensing && owner.CanDefense)
+                return PlayerState.Defense;
 
             if (owner.VelocityY < 0)
                 return PlayerState.Fall;

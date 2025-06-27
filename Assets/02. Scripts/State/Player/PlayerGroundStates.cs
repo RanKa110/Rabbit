@@ -22,8 +22,8 @@ namespace PlayerGroundStates
             if (owner.ComboAttackTriggered)
                 return PlayerState.ComboAttack;
             
-            if (owner.ParryingTriggered)
-                return PlayerState.Parrying;
+            if (owner.IsDefensing && owner.CanDefense)
+                return PlayerState.Defense;
             
             if (owner.JumpTriggered)
                 return PlayerState.Jump;
@@ -45,6 +45,7 @@ namespace PlayerGroundStates
     {
         public override void OnEnter(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.MoveParameterHash, true);
             owner.CanDoubleJump = true;
         }
 
@@ -54,6 +55,7 @@ namespace PlayerGroundStates
 
         public override void OnExit(PlayerController owner)
         {
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.MoveParameterHash, false);
         }
 
         public override PlayerState CheckTransition(PlayerController owner)
@@ -61,8 +63,8 @@ namespace PlayerGroundStates
             if (owner.ComboAttackTriggered)
                 return PlayerState.ComboAttack;
             
-            if (owner.ParryingTriggered)
-                return PlayerState.Parrying;
+            if (owner.IsDefensing && owner.CanDefense)
+                return PlayerState.Defense;
 
             if (owner.VelocityY < 0)
                 return PlayerState.Fall;
@@ -77,26 +79,6 @@ namespace PlayerGroundStates
                 return PlayerState.Idle;
             
             return PlayerState.Move;
-        }
-    }
-    
-    public class CrouchState : PlayerGroundState
-    {
-        public override void OnEnter(PlayerController owner)
-        {
-        }
-
-        public override void OnUpdate(PlayerController owner)
-        {
-        }
-
-        public override void OnExit(PlayerController owner)
-        {
-        }
-
-        public override PlayerState CheckTransition(PlayerController owner)
-        {
-            return PlayerState.Crouch;
         }
     }
 }

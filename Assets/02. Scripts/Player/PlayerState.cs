@@ -2,7 +2,6 @@ public enum PlayerState
 {
     Idle,
     Move,
-    Crouch,
     
     Jump,
     Fall,
@@ -12,8 +11,6 @@ public enum PlayerState
     AirAttack,
     
     Defense,
-    Parrying,
-    Evasion,
     Dash,
     
 }
