@@ -54,7 +54,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4148230105435064857
 Transform:
   m_ObjectHideFlags: 0
@@ -255,7 +255,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   minAttackDistance: 3
+  deathEffectPrefab: {fileID: 0}
+  deathSound: {fileID: 0}
   hitEffectPrefab: {fileID: 5046881502283555390, guid: c358351990a7d7c46a195f6be7092695, type: 3}
+  dropItems: []
+  experienceAmount: 50
 --- !u!114 &17406046109936022
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -268,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ed4ee506057e584c89cdc35a9c10ae2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 1
   currentHealth: 0
   moveSpeed: 2
   attackDamage: 10

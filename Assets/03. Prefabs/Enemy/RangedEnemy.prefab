@@ -224,7 +224,11 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   minAttackDistance: 3
+  deathEffectPrefab: {fileID: 0}
+  deathSound: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
+  dropItems: []
+  experienceAmount: 50
 --- !u!114 &8906417919447400123
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -237,7 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f4542d1f2ea92c46ba296a7c506e461, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  maxHealth: 1
   currentHealth: 0
   moveSpeed: 2
   attackDamage: 10

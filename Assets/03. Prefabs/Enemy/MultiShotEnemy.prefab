@@ -47,7 +47,7 @@ GameObject:
   - component: {fileID: 6570753048660959224}
   - component: {fileID: 1820667556925250539}
   - component: {fileID: 8356445897308578140}
-  - component: {fileID: 1287045405643346012}
+  - component: {fileID: 4328643472067649934}
   m_Layer: 6
   m_Name: MultiShotEnemy
   m_TagString: Enemy
@@ -132,8 +132,8 @@ CapsuleCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.010204083, y: 0.0051020323}
-  m_Size: {x: 0.12244903, y: 0.12244903}
+  m_Offset: {x: 0.010204083, y: -0.011591411}
+  m_Size: {x: 0.12244903, y: 0.2043985}
   m_Direction: 0
 --- !u!212 &3957991378622921465
 SpriteRenderer:
@@ -260,7 +260,7 @@ MonoBehaviour:
   hitEffectPrefab: {fileID: 0}
   dropItems: []
   experienceAmount: 50
---- !u!114 &1287045405643346012
+--- !u!114 &4328643472067649934
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -269,45 +269,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 7083902188644727497}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 36e71bcfd5658f544939076c088d0c8c, type: 3}
+  m_Script: {fileID: 11500000, guid: 43673caaedd00084cbfe3a513e233ad4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthBarPrefab: {fileID: 7124722410306741317, guid: 7751d4c25cb67674fa9b1af4cd2aed2a, type: 3}
-  worldOffset: {x: 0, y: 0.3, z: 0}
-  screenOffset: {x: 0, y: 50}
-  hideWhenFull: 0
-  hideDelay: 3
-  healthBarSize: {x: 100, y: 15}
-  healthGradient:
-    serializedVersion: 2
-    key0: {r: 0.8392157, g: 0.40367532, b: 0.38039216, a: 1}
-    key1: {r: 0.40775186, g: 0.7264151, b: 0.4617303, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  defaultColor: {r: 0, g: 1, b: 0, a: 1}
-  midColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  lowColor: {r: 1, g: 0, b: 0, a: 1}
+  maxHealth: 1
+  currentHealth: 0
+  moveSpeed: 2
+  attackDamage: 10
+  attackCooldown: 1
+  detectionRange: 10
+  attackRange: 2
+  currentState: 0
+  projectilePrefab: {fileID: 7016860977793892785, guid: cfe2642e3a538a141b5c316ac50649fd, type: 3}
+  firePoint: {fileID: 3506701403373076833}
+  projectileSpeed: 10
+  minAttackDistance: 4
+  projectileCount: 5
+  spreadAngle: 60
+  useRandomSpread: 0
+  shotPattern: 4
