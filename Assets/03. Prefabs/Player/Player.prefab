@@ -253,13 +253,14 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 128
+  playerAnimation: {fileID: 0}
   ComboIndex: 0
   HitBox: {fileID: 5302217459370344889}
   ComboAttackInfoDatas:
   - <ComboStateIndex>k__BackingField: 0
     <AttackName>k__BackingField: Attack 1
     <ExtraDamage>k__BackingField: 0
-    <ComboTransitionTime>k__BackingField: 0.483
+    <ComboTransitionTime>k__BackingField: 0.585
     <DealingStartTransitionTime>k__BackingField: 0
     <DealingEndTransitionTime>k__BackingField: 0.142
   - <ComboStateIndex>k__BackingField: 1
@@ -267,13 +268,13 @@ MonoBehaviour:
     <ExtraDamage>k__BackingField: 0
     <ComboTransitionTime>k__BackingField: 0.739
     <DealingStartTransitionTime>k__BackingField: 0
-    <DealingEndTransitionTime>k__BackingField: 0.528
+    <DealingEndTransitionTime>k__BackingField: 0.136
   - <ComboStateIndex>k__BackingField: -1
     <AttackName>k__BackingField: Attack 3
     <ExtraDamage>k__BackingField: 0
-    <ComboTransitionTime>k__BackingField: 0.631
-    <DealingStartTransitionTime>k__BackingField: 0.193
-    <DealingEndTransitionTime>k__BackingField: 0.381
+    <ComboTransitionTime>k__BackingField: 0.66
+    <DealingStartTransitionTime>k__BackingField: 0
+    <DealingEndTransitionTime>k__BackingField: 0.129
   AirAttackInfoData:
     <ComboStateIndex>k__BackingField: 0
     <AttackName>k__BackingField: Air Attack
@@ -313,13 +314,13 @@ MonoBehaviour:
     jumpParameterName: Jump
     fallParameterName: Fall
     doubleJumpParameterName: DoubleJump
-    attackParameterName: Attack
+    attackParameterName: '@Attack'
     comboAttackParameterName: ComboAttack
     airAttackParameterName: AirAttack
     actionParameterName: '@Action'
     defenseParameterName: Defense
-    parryingParameterName: Parrying
-    evasionParameterName: Evasion
+    parryParameterName: Parry
+    dodgeParameterName: Dodge
     dashParameterName: Dash
 --- !u!1 &5302217459370344889
 GameObject:

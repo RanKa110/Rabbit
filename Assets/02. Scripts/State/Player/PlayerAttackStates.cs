@@ -14,14 +14,18 @@ namespace PlayerAttackStates
         {
             base.OnEnter(owner);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.ComboAttackParameterHash, true);
+            owner.PlayerAnimation.Animator.SetInteger("Combo", owner.ComboIndex);
+
             owner.IsComboAttacking = true;
             owner.ComboAttackTriggered = false;
+            owner.CanAttack = false;
             owner.StopMoving();
             
             _alreadyAppliedCombo = false;
             _attackInfoData = owner.ComboAttackInfoDatas[owner.ComboIndex];
+            if (_attackCoroutine != null)
+                owner.StopCoroutine(_attackCoroutine);
             _attackCoroutine = owner.StartCoroutine(DoAttack(owner));
-            owner.PlayerAnimation.Animator.SetInteger("Combo", owner.ComboIndex);
             Debug.Log(_attackInfoData.AttackName);
         }
 
@@ -61,6 +65,7 @@ namespace PlayerAttackStates
             owner.ComboAttackTriggered = false;
             if (_attackCoroutine != null)
                 owner.StopCoroutine(_attackCoroutine);
+            owner.CanAttack = true;
             owner.IsComboAttacking = false;
             owner.JumpTriggered = false;
             owner.DashTriggered = false;
@@ -81,17 +86,17 @@ namespace PlayerAttackStates
         private void TryComboAttack(PlayerController owner)
         {
             if (_alreadyAppliedCombo) return;
-            if (GetNormalizedTime(owner.PlayerAnimation.Animator, "Attack") <
-                _attackInfoData.DealingEndTransitionTime) return;
+            float normalizedTime = GetNormalizedTime(owner.PlayerAnimation.Animator, "Attack");
+    
+            if (normalizedTime < _attackInfoData.DealingStartTransitionTime) return;
+            if (normalizedTime > _attackInfoData.DealingEndTransitionTime) return;
+            owner.CanAttack = true;
             if (_attackInfoData.ComboStateIndex == -1) return;
-            if (!owner.IsComboAttacking) return;
+            if (!owner.ComboAttackTriggered) return;
 
-            if (owner.ComboAttackTriggered && GetNormalizedTime(owner.PlayerAnimation.Animator, "Attack") >=
-                _attackInfoData.ComboTransitionTime)
-            {
-                _alreadyAppliedCombo = true;
-                owner.ComboAttackTriggered = false;
-            }
+            _alreadyAppliedCombo = true;
+            owner.ComboAttackTriggered = false;
+            owner.ComboIndex = _attackInfoData.ComboStateIndex + 1;
         }
     }
 

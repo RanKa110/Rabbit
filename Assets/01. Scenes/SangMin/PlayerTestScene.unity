@@ -566,14 +566,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 3233895217296467080, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: fe08f55343228ec47b1bda67f1e96891, type: 2}
-    - target: {fileID: 9086166079331664889, guid: ed835823d6b3e7a4bb02ec8216c5aedd, type: 3}
-      propertyPath: <AnimationData>k__BackingField.attackParameterName
-      value: '@Attack'
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

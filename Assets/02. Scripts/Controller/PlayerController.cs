@@ -54,6 +54,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     public bool IsDefensing { get => _isDefensing; set => _isDefensing = value; }
     public bool CanDash { get; set; } = true;
     public bool CanDefense { get; set; } = true;
+    public bool CanAttack { get; set; } = true;
     public bool ComboAttackTriggered { get => _attackTriggered && IsGrounded; set => _attackTriggered = value; }
     public bool IsComboAttacking { get => _isAttacking && IsGrounded; set => _isAttacking = value; }
     public bool AirAttackTriggered { get => _attackTriggered && !IsGrounded; set => _attackTriggered = value; }
@@ -143,7 +144,11 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         
         action.Jump.started += _ => _jumpTriggered = true;
 
-        action.Attack.started += _ => _attackTriggered = true;
+        action.Attack.started += _ =>
+        {
+            if (CanAttack)
+                _attackTriggered = true;
+        };
         
         action.Defense.performed += _ => _isDefensing = true;
         action.Defense.canceled += _ => _isDefensing = false;
