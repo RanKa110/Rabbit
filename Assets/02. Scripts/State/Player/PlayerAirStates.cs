@@ -28,9 +28,6 @@ namespace PlayerAirStates
             if (owner.AirAttackTriggered)
                 return PlayerState.AirAttack;
             
-            if (owner.IsDefensing && owner.CanDefense)
-                return PlayerState.Defense;
-            
             if (owner.JumpTriggered && owner.CanDoubleJump)
                 return PlayerState.DoubleJump;
             
@@ -67,9 +64,6 @@ namespace PlayerAirStates
         {
             if (owner.AirAttackTriggered)
                 return PlayerState.AirAttack;
-            
-            if (owner.IsDefensing && owner.CanDefense)
-                return PlayerState.Defense;
 
             if (owner.JumpTriggered && owner.CanDoubleJump)
                 return PlayerState.DoubleJump;
@@ -109,15 +103,12 @@ namespace PlayerAirStates
         {
             if (owner.AirAttackTriggered)
                 return PlayerState.AirAttack;
-            
-            if (owner.IsDefensing && owner.CanDefense)
-                return PlayerState.Defense;
 
-            if (owner.VelocityY < 0)
-                return PlayerState.Fall;
-            
             if (owner.DashTriggered && owner.CanDash)
                 return PlayerState.Dash;
+            
+            if (owner.VelocityY < 0)
+                return PlayerState.Fall;
             
             if (owner.IsGrounded)
                 return PlayerState.Idle;

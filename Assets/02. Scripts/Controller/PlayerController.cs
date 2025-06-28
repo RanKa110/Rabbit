@@ -83,7 +83,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     protected override void Update()
     {
         base.Update();
-        if (_isDashing || IsComboAttacking) return;
+        if (_isDashing || _isAttacking || _isDefensing) return;
         Rotate();
     }
     
@@ -91,7 +91,7 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
     {
         if (_isDashing) return;
         if (!CanDash) _dashTriggered = false;
-        if (!IsComboAttacking) Movement();
+        if (!IsComboAttacking && !_isDefensing) Movement();
         if (!IsGrounded) Fall();
     }
 
