@@ -20,6 +20,7 @@ namespace PlayerAirStates
         {
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.JumpParameterHash, false);
             owner.JumpTriggered = false;
+            owner.AirAttackTriggered = false;
             base.OnExit(owner);
         }
 
@@ -57,6 +58,7 @@ namespace PlayerAirStates
         {
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.FallParameterHash, false);
             owner.JumpTriggered = false;
+            owner.AirAttackTriggered = false;
             base.OnExit(owner);
         }
 
@@ -96,6 +98,7 @@ namespace PlayerAirStates
         {
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.DoubleJumpParameterHash, false);
             owner.JumpTriggered = false;
+            owner.AirAttackTriggered = false;
             base.OnExit(owner);
         }
 

@@ -27,6 +27,7 @@ public abstract class PlayerAirState : IState<PlayerController, PlayerState>
 
     public virtual void OnExit(PlayerController owner)
     {
+        owner.ComboIndex = 0;
     }
     public abstract PlayerState CheckTransition(PlayerController owner);
 }
@@ -77,6 +78,7 @@ public abstract class PlayerActionState : IState<PlayerController, PlayerState>
     public virtual void OnExit(PlayerController owner)
     {
         owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.ActionParameterHash, false);
+        owner.ComboIndex = 0;
     }
     public abstract PlayerState CheckTransition(PlayerController owner);
 }
