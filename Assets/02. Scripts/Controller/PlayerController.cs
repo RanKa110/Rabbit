@@ -244,6 +244,12 @@ public class PlayerController : BaseController<PlayerController, PlayerState>, I
         CanDefense = true;
     }
 
+    public IEnumerator AttackCounter()
+    {
+        yield return new WaitForSeconds(0.3f);
+        ComboIndex = 0;
+    }
+
     public void Attack()
     {
         Target?.TakeDamage(this);

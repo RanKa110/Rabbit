@@ -13,8 +13,8 @@ namespace PlayerAttackStates
         public override void OnEnter(PlayerController owner)
         {
             base.OnEnter(owner);
-            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.ComboAttackParameterHash, true);
             owner.PlayerAnimation.Animator.SetInteger("Combo", owner.ComboIndex);
+            owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.ComboAttackParameterHash, true);
 
             owner.IsComboAttacking = true;
             owner.ComboAttackTriggered = false;
@@ -69,6 +69,7 @@ namespace PlayerAttackStates
             owner.IsComboAttacking = false;
             owner.JumpTriggered = false;
             owner.DashTriggered = false;
+            owner.StartCoroutine(owner.AttackCounter());
             base.OnExit(owner);
         }
 

@@ -260,21 +260,21 @@ MonoBehaviour:
   - <ComboStateIndex>k__BackingField: 0
     <AttackName>k__BackingField: Attack 1
     <ExtraDamage>k__BackingField: 0
-    <ComboTransitionTime>k__BackingField: 0.585
+    <ComboTransitionTime>k__BackingField: 0.476
     <DealingStartTransitionTime>k__BackingField: 0
-    <DealingEndTransitionTime>k__BackingField: 0.142
+    <DealingEndTransitionTime>k__BackingField: 0.544
   - <ComboStateIndex>k__BackingField: 1
     <AttackName>k__BackingField: Attack 2
     <ExtraDamage>k__BackingField: 0
-    <ComboTransitionTime>k__BackingField: 0.739
+    <ComboTransitionTime>k__BackingField: 0.49
     <DealingStartTransitionTime>k__BackingField: 0
-    <DealingEndTransitionTime>k__BackingField: 0.136
+    <DealingEndTransitionTime>k__BackingField: 0.592
   - <ComboStateIndex>k__BackingField: -1
     <AttackName>k__BackingField: Attack 3
     <ExtraDamage>k__BackingField: 0
-    <ComboTransitionTime>k__BackingField: 0.66
-    <DealingStartTransitionTime>k__BackingField: 0
-    <DealingEndTransitionTime>k__BackingField: 0.129
+    <ComboTransitionTime>k__BackingField: 0.721
+    <DealingStartTransitionTime>k__BackingField: 0.156
+    <DealingEndTransitionTime>k__BackingField: 0.864
   AirAttackInfoData:
     <ComboStateIndex>k__BackingField: 0
     <AttackName>k__BackingField: Air Attack
