@@ -8,11 +8,14 @@ namespace PlayerAttackStates
     {
         private AttackInfoData _attackInfoData;
         private Coroutine _attackCoroutine;
+        private Coroutine _attackCounterCoroutine;
         private bool _alreadyAppliedCombo;
 
         public override void OnEnter(PlayerController owner)
         {
             base.OnEnter(owner);
+            if (_attackCounterCoroutine != null)
+                owner.StopCoroutine(_attackCounterCoroutine);
             owner.PlayerAnimation.Animator.SetInteger("Combo", owner.ComboIndex);
             owner.PlayerAnimation.Animator.SetBool(owner.PlayerAnimation.AnimationData.ComboAttackParameterHash, true);
 
@@ -69,7 +72,7 @@ namespace PlayerAttackStates
             owner.IsComboAttacking = false;
             owner.JumpTriggered = false;
             owner.DashTriggered = false;
-            owner.StartCoroutine(owner.AttackCounter());
+            _attackCounterCoroutine = owner.StartCoroutine(owner.AttackCounter());
             base.OnExit(owner);
         }
 
