@@ -23,6 +23,8 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     public float MoveSpeed => StatManager.GetValueSafe(StatType.MoveSpeed, 3f);
     public float AttackCooldown => _data.attackCooldown;
 
+    [SerializeField] private Transform firePoint;
+
     //  게이지 관련 → 보스가 기본 공격 시 채워지는 게이지
     [Header("기본 공격 게이지 설정")]
     [SerializeField] private float maxBasicGauge = 100f;
@@ -48,6 +50,9 @@ public class BossController : BaseController<BossController, BossState>, IAttack
     public AttackHandler AttackHandler => _attackHandler;
 
     public float GetPatternDelay(int idx) => Data.PatternDelays[idx];
+
+    [Header("투사체 발사 지점")]
+    [SerializeField] public Transform FirePoint => firePoint;
 
     //  IUnitController
     public bool IsDead => _isDead;
@@ -104,7 +109,7 @@ public class BossController : BaseController<BossController, BossState>, IAttack
         BossState.Idle => new IdleState(),
         BossState.Chasing => new ChasingState(),
         BossState.Attack => new AttackState(),
-        BossState.Pattern1 => new PatternState(0),
+        BossState.Pattern1 => new PatternShootState(this),
         BossState.Pattern2 => new PatternState(1),
         BossState.Pattern3 => new PatternState(2),
         BossState.Evade => new EvadeState(),

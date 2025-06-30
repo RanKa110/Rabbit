@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Threading;
+using Unity.Cinemachine;
 
 
 namespace BossStates
@@ -337,6 +338,108 @@ namespace BossStates
         public BossState CheckTransition(BossController owner)
         {
             return BossState.Die;
+        }
+    }
+
+    //  패턴 2: 플레이어를 향해 연사 → 플레이어 패링 가능
+    public class PatternShootState : IState<BossController, BossState>
+    {
+        private bool _started;
+        private float _timer;
+        private readonly int _shotCount;
+        private readonly float _shotInterval;
+        private readonly float _patternDelay;
+
+        public PatternShootState(BossController owner)
+        {
+            _shotCount = owner.Data.pattern2ShotCount;
+            _shotInterval = owner.Data.pattern2ShotInterval;
+            _patternDelay = owner.GetPatternDelay(0);
+        }
+
+        public void OnEnter(BossController owner)
+        {
+            _started = false;
+            _timer = 0f;
+            owner.SetAnimationMoving(false);
+            owner.FaceToTarget();
+        }
+
+        public void OnUpdate(BossController owner)
+        {
+            if (!_started)
+            {
+                _started = true;
+                owner.StartCoroutine(DoSpray(owner));
+            }
+
+            _timer += Time.deltaTime;
+        }
+
+        public void OnExit(BossController owner)
+        {
+            //  연사 중간에 Sprite 바뀌면 멈추도록 예외처리
+            owner.SetAnimationMoving(true);
+        }
+
+        public BossState CheckTransition(BossController owner)
+        {
+            //  사망 우선
+            if (owner.IsDead)
+            {
+                return BossState.Die;
+            }
+
+            if (_timer >= _patternDelay)
+            {
+                return BossState.Chasing;
+            }
+
+            return BossState.Pattern2;
+        }
+
+        private IEnumerator DoSpray(BossController owner)
+        {
+            if (owner.FirePoint == null)
+            {
+                Debug.LogError("총 쏘는 패턴: FirePoint가 할당되지 않음!");
+                yield break;
+            }
+
+            if (owner.Target == null || owner.Target.Collider == null)
+            {
+                Debug.LogError("총 쏘는 패턴: Target이 없거나 Collider가 없음!");
+                yield break;
+            }
+
+
+            //  연사 준비 애니메이션 
+            owner.SetAnimationAttack();
+
+            //  짧게 대기 후 연사 시작
+            yield return new WaitForSeconds(0.1f);
+
+            for (int i = 0; i < _shotCount; i++)
+            {
+                //  방향 계산
+                Vector3 spawnPos = owner.FirePoint.position;
+                Vector3 targetPos = owner.Target.Collider.bounds.center;
+
+                Vector2 direction = ((Vector2)(targetPos - spawnPos)).normalized;
+
+                //  총알 생성
+                var obj = Object.Instantiate(owner.Data.projectilePrefab, spawnPos, Quaternion.identity);
+
+                float speed = owner.Data.projectileSpeed;
+
+                var proj = obj.GetComponent<BossProjectile>();
+                proj.Initialize(direction, owner, speed);
+
+                //  연사 간격
+                yield return new WaitForSeconds(_shotInterval);
+            }
+
+            owner.GetComponent<Animator>().ResetTrigger("Attack");
         }
     }
 }

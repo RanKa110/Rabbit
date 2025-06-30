@@ -13,9 +13,10 @@ MonoBehaviour:
   m_Name: BossData
   m_EditorClassIdentifier: 
   ID: 0
-  Type: 3
+  Type: 1
   detectionRange: 20
-  projectilePrefab: {fileID: 0}
+  projectilePrefab: {fileID: 7016860977793892785, guid: de3e609a32d496a41b30608ac37c6239, type: 3}
+  projectileSpeed: 1
   parryChance: 0.5
   attackCooldown: 2
   PatternDelays:
@@ -50,3 +51,5 @@ MonoBehaviour:
   - StatType: 5
     ModifierType: 0
     Value: 1
+  pattern2ShotCount: 10
+  pattern2ShotInterval: 0.1
